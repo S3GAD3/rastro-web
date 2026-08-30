@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<title>RASTRO-DOMAIN · Expediente OSINT · Dominios</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --kraft: #d9c9a3;
+  --kraft-dark: #c4b088;
+  --kraft-shadow: #a8926a;
+  --paper: #f0e6cc;
+  --paper-dark: #e4d7b0;
+  --ink: #2b2320;
+  --ink-soft: #4a3f36;
+  --stamp-red: #9c2b2b;
+  --stamp-red-dark: #6f1c1c;
+  --stamp-blue: #1f3d5c;
+  --stamp-blue-dark: #142a40;
+  --stamp-green:#33502f;
+  --stamp-green-dark:#213620;
+  --stamp-amber:#8a6a1c;
+  --stamp-amber-dark:#5e480f;
+  --tape: rgba(230, 220, 180, 0.55);
+  --folder-tab: #c9a876;
+}
+*{box-sizing:border-box;}
+html,body{ margin:0; padding:0; }
+body{
+  background:
+    repeating-linear-gradient(0deg, rgba(0,0,0,0.015) 0px, rgba(0,0,0,0.015) 1px, transparent 1px, transparent 3px),
+    radial-gradient(ellipse at 20% 10%, rgba(255,255,255,0.15), transparent 60%),
+    var(--kraft);
+  color: var(--ink);
+  font-family: 'Courier Prime', 'Courier New', monospace;
+  min-height:100vh;
+}
+.title-font{ font-family:'Special Elite', 'Courier New', monospace; letter-spacing:1px; }
+a{ color: inherit; }
+::selection{ background: var(--stamp-amber); color:#fff; }
+
+/* ===== EXPEDIENTE / CARPETA ===== */
+.folder-wrap{ max-width: 1040px; margin: 28px auto 60px; padding: 0 16px; }
+.folder-tab{
+  display:inline-block; background: var(--folder-tab); border: 2px solid var(--ink); border-bottom:none;
+  padding: 8px 26px 10px; margin-left: 30px; border-radius: 8px 8px 0 0;
+  font-family:'Special Elite', monospace; font-size: 13px; letter-spacing: 2px; color: var(--ink);
+}
+.folder-body{
+  position:relative; background: var(--paper);
+  background-image: radial-gradient(circle at 85% 5%, rgba(255,255,255,0.35), transparent 40%);
+  border: 3px solid var(--ink); border-radius: 4px 10px 10px 10px;
+  padding: 30px 26px 22px; box-shadow: 6px 6px 0 rgba(0,0,0,0.18), 0 22px 45px rgba(30,20,10,0.28);
+}
+.tape{ position:absolute; width:110px; height:34px; background: var(--tape); border:1px solid rgba(80,60,30,0.25);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15); opacity:0.9; }
+.tape.t1{ top:-16px; left:36px; transform: rotate(-5deg); }
+.tape.t2{ top:-14px; right:60px; transform: rotate(4deg); }
+.corner{ position:absolute; width:26px; height:26px; border-color: var(--ink); opacity:0.55; }
+.corner.tl{ top:8px; left:8px; border-top:3px solid; border-left:3px solid; }
+.corner.br{ bottom:8px; right:8px; border-bottom:3px solid; border-right:3px solid; }
+.stamp-mark{
+  position:absolute; top:18px; right:26px; border:2px solid var(--stamp-red-dark); color:var(--stamp-red-dark);
+  padding:4px 12px; border-radius:5px; transform: rotate(6deg); font-family:'Special Elite', monospace;
+  font-size:11px; letter-spacing:2px; text-transform:uppercase; opacity:0.75;
+}
+
+/* ===== HEADER ===== */
+header.expediente-header{ text-align:center; margin-bottom:20px; }
+.brandline{ display:flex; align-items:center; justify-content:center; gap:12px; margin-bottom:10px; }
+.brandline .badge{ width:44px; height:44px; }
+.brandline .badge svg{ width:100%; height:100%; }
+.brandline .brand-txt{ text-align:left; }
+.brandline .brand-eyebrow{ font-size:10px; letter-spacing:.18em; color: var(--stamp-amber-dark); text-transform:uppercase; }
+.brandline .brand-name{ font-family:'Special Elite', monospace; font-size:14px; letter-spacing:.06em; }
+.brandline .brand-name span{ color: var(--stamp-blue); }
+header.expediente-header h1{ font-size: clamp(30px, 5vw, 46px); margin: 4px 0 6px; }
+header.expediente-header .sub{ color: var(--ink-soft); font-size:13px; max-width:64ch; margin:0 auto 12px; line-height:1.55; }
+.case-meta{ display:flex; gap:14px; justify-content:center; flex-wrap:wrap; font-size:11px; color: var(--ink-soft); }
+.case-meta span{ border:1px solid var(--ink); background: var(--paper-dark); border-radius:10px; padding:3px 10px; }
+
+/* ===== SEARCH BOX ===== */
+.search-box{
+  background: var(--paper-dark); border: 2px solid var(--ink); border-radius: 6px; padding: 18px;
+  margin-bottom: 18px; box-shadow: 3px 3px 0 rgba(0,0,0,0.12);
+}
+.search-box label{ display:block; font-size:12px; letter-spacing:2px; text-transform:uppercase; color: var(--ink-soft); margin-bottom:8px; }
+.search-row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+.search-row input{
+  flex: 1 1 260px; font-family:'Courier Prime', monospace; font-size: 16px; padding: 11px 13px;
+  border: 2px solid var(--ink); border-radius: 4px; background: var(--paper); color: var(--ink);
+}
+.search-row input:focus{ outline: 2px solid var(--stamp-blue); }
+.error-line{ color: var(--stamp-red-dark); font-size:12px; margin-top:8px; font-weight:700; }
+
+.btn-stamp{
+  font-family:'Special Elite', monospace; font-size: 13px; letter-spacing:1px; padding: 12px 20px;
+  border: 3px solid var(--stamp-red-dark); background: var(--stamp-red); color: #f6ead0; border-radius: 6px;
+  cursor:pointer; box-shadow: 3px 3px 0 var(--stamp-red-dark); text-transform: uppercase; white-space:nowrap;
+}
+.btn-stamp:hover{ transform: translate(-1px,-1px); box-shadow: 4px 4px 0 var(--stamp-red-dark); }
+.btn-stamp:active{ transform: translate(1px,1px); box-shadow: 1px 1px 0 var(--stamp-red-dark); }
+.btn-stamp.blue{ border-color: var(--stamp-blue-dark); background: var(--stamp-blue); box-shadow:3px 3px 0 var(--stamp-blue-dark); }
+.btn-stamp.blue:hover{ box-shadow:4px 4px 0 var(--stamp-blue-dark); }
+.btn-stamp.green{ border-color: var(--stamp-green-dark); background: var(--stamp-green); box-shadow:3px 3px 0 var(--stamp-green-dark); }
+.btn-stamp.green:hover{ box-shadow:4px 4px 0 var(--stamp-green-dark); }
+.btn-stamp.ghost{ background: var(--paper); color: var(--ink); box-shadow:3px 3px 0 var(--ink); border-color: var(--ink); }
+.btn-stamp.ghost:hover{ box-shadow:4px 4px 0 var(--ink); }
+.btn-stamp.small{ font-size:10.5px; padding:8px 12px; }
+.btn-stamp[disabled]{ opacity:.45; cursor:not-allowed; transform:none !important; }
+
+.toolrow{ display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; align-items:center; }
+.depth-toggle{ display:flex; gap:6px; margin-left:auto; align-items:center; }
+.depth-toggle span.lbl{ font-size:10.5px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:1px; margin-right:2px; }
+.depth-btn{
+  font-family:'Courier Prime', monospace; font-weight:700; font-size:10.5px; letter-spacing:.5px;
+  padding:7px 10px; border:2px solid var(--ink); background: var(--paper); color: var(--ink-soft); border-radius:5px; cursor:pointer;
+}
+.depth-btn.active{ background: var(--stamp-blue); color:#eaf1f8; border-color: var(--stamp-blue-dark); }
+
+/* ===== STATS ===== */
+.stats-row{ display:grid; grid-template-columns: repeat(5,1fr); gap:9px; margin: 14px 0 4px; }
+@media (max-width:700px){ .stats-row{ grid-template-columns: repeat(2,1fr); } }
+.stat-box{ background: var(--paper); border:1.5px solid var(--ink); border-radius:6px; padding:10px 8px; text-align:center; }
+.stat-box b{ display:block; font-size:14px; font-family:'Special Elite', monospace; word-break:break-all; }
+.stat-box span{ font-size:9.5px; color: var(--ink-soft); text-transform:uppercase; letter-spacing:.05em; }
+.stat-box.accent b{ font-size:20px; color: var(--stamp-blue); }
+.stat-box .cpy{ border:none; background:none; cursor:pointer; font-size:10px; color:var(--ink-soft); margin-left:4px; }
+
+/* ===== SECTION TITLES ===== */
+.section-title{ display:flex; align-items:center; gap:10px; margin: 26px 0 10px; }
+.section-title .num{
+  font-family:'Special Elite', monospace; font-size:12px; background: var(--stamp-blue); color:#f0ead4;
+  border-radius:50%; width:24px; height:24px; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.section-title h2{ font-size:16px; margin:0; letter-spacing:.02em; }
+.section-desc{ font-size:11.5px; color: var(--ink-soft); margin: -4px 0 10px; line-height:1.5; }
+
+/* ===== FILTER ===== */
+.filter-row{ display:flex; gap:10px; margin: 14px 0; flex-wrap:wrap; }
+.filter-row input{ flex:1 1 220px; font-family:'Courier Prime', monospace; padding:9px 11px; border:2px solid var(--ink); border-radius:5px; background: var(--paper); font-size:12.5px; }
+
+/* ===== CATEGORY DETAILS ===== */
+details.category{
+  border: 2px solid var(--ink); border-radius: 6px; margin-bottom: 10px; background: var(--paper);
+  box-shadow: 2px 2px 0 rgba(0,0,0,0.1); overflow:hidden;
+}
+details.category summary{
+  cursor:pointer; padding: 12px 14px; background: var(--kraft-dark); font-family:'Special Elite', monospace;
+  font-weight:700; letter-spacing: 1px; font-size: 13px; text-transform:uppercase; color: var(--ink);
+  display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid var(--ink); list-style:none;
+}
+details.category summary::-webkit-details-marker{ display:none; }
+details.category summary:after{ content:"▸"; transition: transform .15s ease; font-size:15px; }
+details.category[open] summary:after{ transform: rotate(90deg); }
+details.category .count{ font-size:10px; background:var(--paper); border:1px solid var(--ink); padding:2px 8px; border-radius:10px; margin-left:8px; }
+details.category:not([open]) summary{ border-bottom:none; }
+
+.cat-intro{ font-size:11.5px; color: var(--ink-soft); padding: 10px 14px 0; line-height:1.55; }
+.cat-warn{ font-size:11.5px; color: var(--stamp-amber-dark); background: #f3e9cf; border-left:4px solid var(--stamp-amber-dark);
+  margin: 10px 14px 0; padding: 8px 10px; border-radius:4px; }
+.group-label{ font-size:10.5px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color: var(--ink-soft); padding: 12px 14px 0; }
+
+.btn-grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 10px; padding: 10px 14px 14px; }
+.plat-cell{ display:flex; flex-direction:column; gap:0; position:relative; }
+.sel-check{ position:absolute; top:5px; left:5px; z-index:2; }
+.sel-check input{ accent-color: var(--stamp-blue); cursor:pointer; }
+.plat-btn{
+  font-family:'Courier Prime', monospace; font-weight:700; font-size: 12px; padding: 11px 8px 11px 24px; text-align:center;
+  border: 2.5px solid var(--stamp-blue-dark); background: var(--stamp-blue); color: #eaf1f8; border-radius: 6px 6px 0 0;
+  cursor:pointer; text-decoration:none; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:3px; min-height: 52px; transition: filter .1s ease;
+}
+.plat-btn:hover{ filter:brightness(1.12); }
+.plat-btn.dork{ background: var(--stamp-green); border-color: var(--stamp-green-dark); }
+.plat-btn.tool{ background: var(--stamp-amber); border-color: var(--stamp-amber-dark); }
+.plat-btn.warn{ background: var(--stamp-red); border-color: var(--stamp-red-dark); }
+.plat-btn .tag{ font-size:8.5px; opacity:0.9; letter-spacing:0.5px; text-transform:uppercase; }
+.copy-mini{
+  font-family:'Courier Prime', monospace; font-size:9.5px; padding:4px 5px; border:1.5px solid var(--ink); border-top:none;
+  border-radius:0 0 6px 6px; background: var(--paper); color:var(--ink-soft); cursor:pointer; width:100%;
+}
+.copy-mini:hover{ background: var(--paper-dark); }
+
+/* ===== CHIPS (typosquat) ===== */
+.chips-wrap{ display:flex; flex-wrap:wrap; gap:8px; padding: 10px 14px 14px; }
+.chip{
+  font-family:'Courier Prime', monospace; font-size:11.5px; padding:6px 10px; border:1.5px solid var(--ink);
+  background: var(--paper); border-radius:5px; display:inline-flex; align-items:center; gap:6px;
+}
+.chip button{ border:1px solid var(--ink-soft); background: var(--paper-dark); border-radius:4px; font-size:9.5px; padding:2px 6px; cursor:pointer; font-family:'Courier Prime', monospace; }
+
+/* ===== PIVOTES ===== */
+.pivot-chain{ display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding: 10px 14px; font-family:'Special Elite', monospace; font-size:12px; }
+.pivot-node{ background: var(--paper-dark); border:2px solid var(--ink); border-radius:5px; padding:6px 12px; }
+.pivot-arrow{ color: var(--stamp-blue); font-weight:700; }
+.pivot-grid{ display:grid; grid-template-columns: repeat(auto-fit,minmax(230px,1fr)); gap:10px; padding: 4px 14px 14px; }
+.pivot-card{ background: var(--paper); border:1.5px solid var(--ink); border-radius:6px; padding:10px 12px; }
+.pivot-card .pt{ font-family:'Special Elite', monospace; font-size:11.5px; color: var(--stamp-blue-dark); margin-bottom:3px; }
+.pivot-card .pd{ font-size:11px; color: var(--ink-soft); line-height:1.5; }
+
+/* ===== CHECKLIST / WORKFLOW ===== */
+.progress{ height:10px; border-radius:999px; background: var(--paper-dark); border:1.5px solid var(--ink); overflow:hidden; margin:8px 14px 4px; }
+.progress i{ display:block; height:100%; width:0; background: linear-gradient(90deg, var(--stamp-blue), var(--stamp-green)); transition:.2s; }
+.progress-label{ font-size:10.5px; color:var(--ink-soft); padding: 0 14px 10px; }
+.tasklist{ display:grid; gap:7px; padding: 4px 14px 14px; }
+.task{ display:flex; gap:10px; align-items:flex-start; border:1.5px solid var(--ink); background: var(--paper); border-radius:6px; padding:9px 11px; }
+.task input{ margin-top:3px; accent-color: var(--stamp-green); width:15px; height:15px; cursor:pointer; }
+.task label{ font-size:12px; cursor:pointer; }
+.task.done label{ text-decoration:line-through; color: var(--ink-soft); }
+
+/* ===== BUILDER / CUSTOM QUERY BOX ===== */
+.fieldgrid{ display:grid; grid-template-columns: repeat(auto-fit,minmax(150px,1fr)); gap:10px; padding: 12px 14px 0; }
+.fieldgrid label{ display:block; font-size:9.5px; text-transform:uppercase; letter-spacing:.6px; color:var(--ink-soft); margin-bottom:4px; }
+.fieldgrid input{ width:100%; font-family:'Courier Prime', monospace; font-size:12px; padding:9px 10px; border:2px solid var(--ink); border-radius:4px; background: var(--paper); color: var(--ink); }
+.query-preview{
+  margin: 14px 14px 0; background: var(--paper-dark); border: 2px dashed var(--ink); border-radius:6px;
+  padding: 12px 14px; font-family:'Courier Prime', monospace; font-size:13.5px; color: var(--stamp-blue-dark); word-break:break-word;
+}
+.builder-actions{ display:flex; gap:8px; flex-wrap:wrap; padding: 12px 14px 14px; }
+
+/* ===== NOTES ===== */
+textarea{
+  width:100%; min-height:130px; font-family:'Courier Prime', monospace; font-size:12.5px; padding:12px;
+  border:2px solid var(--ink); border-radius:6px; background: var(--paper); resize:vertical; color:var(--ink);
+}
+.notes-wrap{ padding: 12px 14px 14px; }
+
+/* ===== FINDINGS / HISTORY TABLE ===== */
+.tablewrap{ overflow:auto; border: 2px solid var(--ink); border-radius:6px; margin: 0 14px 14px; }
+table{ width:100%; border-collapse:collapse; min-width:520px; background: var(--paper); }
+th,td{ padding:9px 10px; border-bottom:1px solid var(--kraft-shadow); text-align:left; font-size:11px; vertical-align:top; }
+th{ background: var(--kraft-dark); font-family:'Special Elite', monospace; letter-spacing:.05em; text-transform:uppercase; font-size:10px; }
+td a{ color: var(--stamp-blue-dark); word-break:break-all; }
+.del-btn{ border:1.5px solid var(--stamp-red-dark); background:#f3d9d3; color:var(--stamp-red-dark); border-radius:4px; padding:4px 8px; cursor:pointer; font-family:'Courier Prime',monospace; font-weight:700; font-size:10.5px; }
+.empty-msg{ font-size:12px; color: var(--ink-soft); padding: 14px; text-align:center; }
+
+/* ===== FOOTER ===== */
+.expediente-footer{ margin-top: 26px; padding-top: 16px; border-top: 2px dashed var(--kraft-shadow); font-size:11px; color: var(--ink-soft); line-height:1.6; }
+.expediente-footer b{ color: var(--ink); }
+.status-line{ min-height:16px; font-size:12px; color: var(--stamp-green-dark); margin-top:8px; font-weight:700; }
+
+::-webkit-scrollbar{ width:9px; height:9px; }
+::-webkit-scrollbar-track{ background: var(--kraft); }
+::-webkit-scrollbar-thumb{ background: var(--kraft-shadow); border-radius:5px; }
+
+/* ===== RASTRO-DOMAIN v2 additions ===== */
+.plat-actions{display:grid;grid-template-columns:1fr 38px;border:1.5px solid var(--ink);border-top:none;border-radius:0 0 6px 6px;overflow:hidden;background:var(--paper)}
+.copy-mini{border:0;border-radius:0;border-right:1px solid var(--kraft-shadow)}
+.fav-mini{border:0;background:var(--paper);cursor:pointer;font-size:16px;color:var(--ink-soft)}
+.fav-mini.active{color:var(--stamp-amber-dark);background:#efe0b7}
+.mode-badge{position:absolute;top:5px;right:5px;font-size:8px;padding:2px 5px;border:1px solid rgba(255,255,255,.6);border-radius:999px;opacity:.9;text-transform:uppercase;letter-spacing:.4px}
+.plat-btn.manual{background:#6d6048;border-color:#413827}
+.plat-btn.direct{background:var(--stamp-blue);border-color:var(--stamp-blue-dark)}
+.plat-btn.search{background:var(--stamp-green);border-color:var(--stamp-green-dark)}
+.action-strip{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0 14px}
+.case-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;margin:12px 0}
+.case-card{border:2px solid var(--ink);border-radius:6px;background:var(--paper);padding:12px;box-shadow:2px 2px 0 rgba(0,0,0,.09)}
+.case-card h3{font-family:'Special Elite',monospace;font-size:13px;margin:0 0 8px;color:var(--stamp-blue-dark)}
+.case-card p{font-size:11px;color:var(--ink-soft);line-height:1.45;margin:4px 0 10px}
+.case-card input,.case-card select,.case-card textarea{width:100%;font-family:'Courier Prime',monospace;font-size:12px;padding:9px;border:2px solid var(--ink);border-radius:4px;background:var(--paper);color:var(--ink)}
+.case-card textarea{min-height:110px}
+.finding-row{display:grid;grid-template-columns:115px 1fr auto;gap:7px;align-items:center;border-bottom:1px dashed var(--kraft-shadow);padding:7px 0;font-size:11px}
+.finding-row:last-child{border-bottom:0}
+.finding-type{font-weight:700;color:var(--stamp-blue-dark)}
+.finding-value{word-break:break-all}
+.pivot-results{margin-top:10px;display:grid;gap:7px}
+.pivot-result{display:flex;justify-content:space-between;gap:8px;align-items:center;border:1.5px solid var(--ink);padding:7px 8px;border-radius:5px;background:var(--paper-dark);font-size:10.5px}
+.source-legend{display:flex;gap:8px;flex-wrap:wrap;font-size:9.5px;margin:8px 0 2px;color:var(--ink-soft)}
+.source-legend span{border:1px solid var(--ink);border-radius:10px;padding:2px 7px;background:var(--paper)}
+.kbd{border:1px solid var(--ink);background:var(--paper-dark);padding:1px 5px;border-radius:3px;font-size:9px}
+@media(max-width:600px){.finding-row{grid-template-columns:90px 1fr}.finding-row .del-btn{grid-column:2}.mode-badge{display:none}.plat-btn{padding-left:22px}}
+
+/* ===== GRAFO DE INVESTIGACIÓN v4 ===== */
+.graph-card{grid-column:1/-1;padding:0;overflow:hidden}
+.graph-head{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;padding:12px 14px;border-bottom:2px solid var(--ink);background:var(--kraft-dark)}
+.graph-head h3{margin:0}.graph-head p{margin:3px 0 0;max-width:72ch}
+.graph-actions{display:flex;gap:6px;flex-wrap:wrap}
+.graph-zoom{display:flex;align-items:center;gap:4px;padding:3px 5px;border:1px dashed var(--ink-soft);border-radius:4px;background:rgba(255,255,255,.18)}
+.graph-zoom .zoom-readout{min-width:48px;text-align:center;font:700 10px 'Courier Prime',monospace}
+.graph-wrap{position:relative;height:680px;background:linear-gradient(rgba(43,35,32,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(43,35,32,.035) 1px,transparent 1px),var(--paper);background-size:24px 24px;overflow:hidden}
+#caseGraph{width:100%;height:100%;display:block;touch-action:none;user-select:none}
+.graph-edge{stroke:var(--ink-soft);stroke-width:1.6;opacity:.7;fill:none}
+.graph-edge.selected{stroke:var(--stamp-red-dark);stroke-width:2.6;opacity:1}
+.graph-edge-label{font:10px 'Courier Prime',monospace;fill:var(--ink-soft);paint-order:stroke;stroke:var(--paper);stroke-width:5px;stroke-linejoin:round}
+.graph-node rect{stroke:var(--ink);stroke-width:2;rx:7;ry:7;filter:drop-shadow(2px 2px 0 rgba(0,0,0,.12))}
+.graph-node text{pointer-events:none;font-family:'Courier Prime',monospace;fill:var(--ink)}
+.graph-node .ntype{font-size:9px;font-weight:700;letter-spacing:.7px}
+.graph-node .nvalue{font-size:11px;font-weight:700}
+.graph-node.root rect{fill:var(--kraft-dark);stroke-width:3}.graph-node.DOMAIN rect{fill:#dbe8d8}.graph-node.IP rect{fill:#dbe6f0}.graph-node.SUBDOMINIO rect{fill:#dbe8d8}.graph-node.EMAIL rect{fill:#eee0bd}.graph-node.NS rect,.graph-node.MX rect{fill:#e1d8c6}.graph-node.ASN rect{fill:#ddd7ee}.graph-node.URL rect{fill:#d8e7e5}.graph-node.EMPRESA rect{fill:#ead5d1}.graph-node.OTRO rect{fill:var(--paper-dark)}
+.graph-node.selected rect{stroke:var(--stamp-red-dark);stroke-width:4}
+.graph-empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:30px;text-align:center;color:var(--ink-soft);font-size:12px;pointer-events:none}
+.graph-inspector{display:grid;grid-template-columns:minmax(180px,1fr) minmax(180px,1fr) auto;gap:8px;align-items:end;padding:10px 14px;border-top:2px solid var(--ink);background:var(--paper-dark)}
+.graph-inspector label{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.7px;color:var(--ink-soft);margin-bottom:3px}.graph-inspector select,.graph-inspector input{width:100%;font-family:'Courier Prime',monospace;font-size:11px;padding:8px;border:2px solid var(--ink);border-radius:4px;background:var(--paper)}
+.graph-help{padding:8px 14px 12px;font-size:10.5px;line-height:1.45;color:var(--ink-soft);background:var(--paper-dark)}
+
+.graph-card.graph-expanded{position:relative;width:calc(100vw - 32px);margin-left:calc((100% - 100vw)/2 + 16px);z-index:30;background:var(--paper);border:3px solid var(--ink);box-shadow:6px 6px 0 rgba(0,0,0,.18)}
+.graph-card.graph-expanded .graph-wrap{height:820px}
+.graph-card.graph-expanded #caseGraph{min-height:820px}
+.pivot-map-intro{padding:10px 12px;margin:8px 0 12px;border-left:4px solid var(--stamp-red);background:rgba(156,43,43,.06);font-size:11px;line-height:1.5}
+.pivot-stage{margin:12px 0 16px;border:2px solid var(--ink);background:var(--paper-dark)}
+.pivot-stage-title{padding:7px 10px;background:var(--kraft-dark);border-bottom:1px solid var(--ink);font:700 11px 'Courier Prime',monospace;letter-spacing:.8px;text-transform:uppercase}
+.pivot-stage-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(205px,1fr));gap:0}
+.pivot-route{padding:10px;border-right:1px dashed var(--ink-soft);border-bottom:1px dashed var(--ink-soft);min-height:82px}
+.pivot-route .route{font:700 11px 'Courier Prime',monospace;margin-bottom:5px}.pivot-route .why{font-size:10px;line-height:1.4;color:var(--ink-soft)}
+.pivot-route .result{display:inline-block;margin-top:6px;padding:2px 5px;border:1px solid var(--ink-soft);font-size:8px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;background:var(--paper)}
+
+@media(max-width:700px){.graph-wrap{height:520px}.graph-inspector{grid-template-columns:1fr}.graph-actions{width:100%}}
+
+
+/* ===== v4 · INTELIGENCIA TÉCNICA / CAPTURA INTELIGENTE ===== */
+.tech-note{padding:10px 12px;margin:8px 0 12px;border:2px solid var(--ink);background:var(--paper-dark);font-size:10.5px;line-height:1.5}
+.tech-priority{display:inline-block;margin-right:6px;padding:2px 5px;border:1px solid currentColor;border-radius:2px;font-size:8px;font-weight:700;letter-spacing:.7px;text-transform:uppercase}
+.tech-priority.primary{color:#365c45}.tech-priority.alt{color:#1f3d5c}.tech-priority.limited{color:#9c2b2b}
+.capture-card{grid-column:1/-1;border-width:3px;background:linear-gradient(135deg,rgba(31,61,92,.045),transparent 55%),var(--paper)}
+.capture-grid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(240px,.7fr);gap:12px}
+.capture-card textarea{min-height:150px}
+.capture-preview{border:2px dashed var(--ink-soft);background:rgba(255,255,255,.22);padding:8px;min-height:150px;max-height:260px;overflow:auto}
+.capture-item{display:grid;grid-template-columns:auto 82px minmax(0,1fr);gap:7px;align-items:center;padding:6px 4px;border-bottom:1px dashed rgba(43,35,32,.25);font-size:10px}
+.capture-item .ctype{font-weight:700}.capture-item .cval{overflow-wrap:anywhere}
+.capture-summary{font-size:10px;color:var(--ink-soft);margin:5px 0 8px}
+.graph-toolbar-note{font-size:9px;color:var(--ink-soft);padding:0 4px}
+#caseGraph{cursor:grab}#caseGraph.panning{cursor:grabbing}
+@media(max-width:760px){.capture-grid{grid-template-columns:1fr}.capture-preview{max-height:none}}
+
+
+/* ===== RASTRO-WEB v2.0 ===== */
+.indicator-typebar{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-top:9px;padding:8px 10px;border:2px dashed var(--ink-soft);background:rgba(255,255,255,.18);font-size:11px;overflow-wrap:anywhere}
+.indicator-pill{display:inline-block;padding:3px 8px;border:2px solid var(--ink);font:700 10px 'Courier Prime',monospace;letter-spacing:1px;background:var(--kraft-dark)}
+.indicator-pill.IP{background:#dbe6f0}.indicator-pill.URL{background:#d8e7e5}.indicator-pill.DOMAIN{background:#dbe8d8}
+.indicator-hint{color:var(--ink-soft);font-size:9.5px}
+.auto-capture-toggle{display:inline-flex;align-items:center;gap:5px;padding:5px 7px;border:1px dashed var(--ink-soft);font-size:9px;font-weight:700;letter-spacing:.4px}
+.local-analysis{padding:10px 12px;background:var(--paper-dark);border-top:1px dashed var(--ink-soft)}
+.local-analysis-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(205px,1fr));gap:7px}
+.local-kv{border:1px solid var(--ink-soft);background:rgba(255,255,255,.25);padding:8px;min-width:0}
+.local-kv span{display:block;font-size:8px;text-transform:uppercase;letter-spacing:.7px;color:var(--ink-soft);margin-bottom:3px}.local-kv b{display:block;font:700 10.5px 'Courier Prime',monospace;overflow-wrap:anywhere}
+.local-flags{display:flex;gap:5px;flex-wrap:wrap;margin-top:9px}.local-flag{padding:3px 6px;border:1px solid var(--ink-soft);font-size:8.5px;font-weight:700;background:var(--paper)}.local-flag.warn{border-color:var(--stamp-red-dark);color:var(--stamp-red-dark)}
+.graph-node.DOMAIN rect{fill:#dbe8d8}.graph-node.root.URL rect{fill:#bcd8d5}.graph-node.root.IP rect{fill:#c7d8e8}.graph-node.root.DOMAIN rect{fill:var(--kraft-dark)}
+
+
+/* ===== v1.1 · IP PRIVACY + WHOIS HISTORY + RESUMEN INVESTIGADOR ===== */
+.intel-banner{margin:8px 0 12px;padding:10px 12px;border:2px solid var(--ink);background:var(--paper-dark);font-size:10.5px;line-height:1.5}
+.intel-banner b{letter-spacing:.4px}
+.summary-card{grid-column:1/-1;border-width:3px;background:linear-gradient(135deg,rgba(48,87,62,.06),transparent 55%),var(--paper)}
+.summary-output{white-space:pre-wrap;min-height:180px;padding:14px;border:2px solid var(--ink);background:rgba(255,255,255,.28);font:12px/1.65 'Courier Prime',monospace}
+.summary-meta{display:flex;gap:7px;flex-wrap:wrap;margin:7px 0 10px}
+.summary-chip{padding:3px 7px;border:1px solid var(--ink-soft);border-radius:2px;font-size:9px;background:var(--paper-dark)}
+.graph-node.PROVEEDOR rect{fill:#d7e4ef}.graph-node.TITULAR rect{fill:#ead8bd}.graph-node.PRIVACIDAD rect{fill:#ead2d2}.graph-node.PAIS rect{fill:#dce7d4}.graph-node.FECHA rect{fill:#e5dfce}
+
+
+/* ===== RASTRO-WEB v2 · FLUJO INVESTIGADOR ===== */
+.workflow-card{margin:12px 0 16px;border:3px solid var(--ink);background:linear-gradient(135deg,rgba(31,61,92,.05),transparent 58%),var(--paper);padding:12px}
+.workflow-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap}
+.workflow-head h3{margin:0;font-size:14px;letter-spacing:1px}.workflow-progress{font:700 18px 'Special Elite',serif}
+.workflow-bar{height:12px;border:2px solid var(--ink);background:rgba(255,255,255,.22);margin:9px 0}.workflow-fill{height:100%;background:var(--stamp-green);width:0;transition:width .2s}
+.workflow-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:6px;margin-top:8px}
+.workflow-step{padding:7px 8px;border:1px dashed var(--ink-soft);font-size:9.5px;display:flex;gap:7px;align-items:center;background:rgba(255,255,255,.2)}
+.workflow-step.done{border-style:solid}.workflow-step .mark{font-weight:700;min-width:13px}.next-action{margin-top:9px;padding:8px 10px;border-left:4px solid var(--stamp-red);background:rgba(156,43,43,.06);font-size:10.5px}
+.capture-source-row{display:grid;grid-template-columns:minmax(180px,.65fr) minmax(180px,.65fr) 1fr;gap:7px;margin-bottom:7px}
+.capture-source-row label{font-size:8px;text-transform:uppercase;letter-spacing:.6px;color:var(--ink-soft)}
+.capture-source-row select,.capture-source-row input{width:100%;font:10.5px 'Courier Prime',monospace;padding:7px;border:2px solid var(--ink);background:var(--paper)}
+.prov-badges{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}.prov-badge{display:inline-block;padding:2px 5px;border:1px solid var(--ink-soft);font-size:7.5px;letter-spacing:.45px;background:var(--paper-dark)}
+.prov-badge.verified{border-color:var(--stamp-green);color:var(--stamp-green)}.prov-badge.historical{border-color:#815d35;color:#815d35}.prov-badge.inferred{border-color:#745884;color:#745884}
+.finding-row.v2{grid-template-columns:76px minmax(0,1fr) auto auto}.finding-star{border:0;background:transparent;font-size:17px;cursor:pointer;color:var(--ink-soft)}.finding-star.on{color:#8b6416}
+.timeline-card{grid-column:1/-1}.timeline-list{position:relative;padding:4px 0 4px 18px}.timeline-list:before{content:"";position:absolute;left:6px;top:5px;bottom:5px;border-left:2px solid var(--ink-soft)}
+.timeline-item{position:relative;margin:0 0 9px;padding:8px 10px;border:1px solid var(--ink-soft);background:rgba(255,255,255,.24);font-size:10px}.timeline-item:before{content:"";position:absolute;left:-17px;top:13px;width:8px;height:8px;border-radius:50%;background:var(--paper);border:2px solid var(--ink)}
+.timeline-date{font-weight:700;margin-bottom:3px}.timeline-source{color:var(--ink-soft);font-size:8.5px;margin-top:3px}
+.node-actions{padding:10px 14px;border-top:1px dashed var(--ink-soft);background:rgba(255,255,255,.18)}.node-actions-title{font:700 9px 'Courier Prime',monospace;letter-spacing:.7px;text-transform:uppercase;margin-bottom:7px}.node-actions .action-strip{margin:0}
+.quick-source{font-size:8px;padding:6px 8px!important}
+.summary-section-title{font-weight:700;letter-spacing:.6px;margin:7px 0 3px}.summary-important{padding:7px 9px;border-left:3px solid #8b6416;background:rgba(139,100,22,.06);margin:7px 0}
+@media(max-width:700px){.capture-source-row{grid-template-columns:1fr}.workflow-grid{grid-template-columns:1fr}.finding-row.v2{grid-template-columns:70px minmax(0,1fr) auto}}
+
+</style>
+</head>
+<body>
+
+<div class="folder-wrap">
+  <div class="folder-tab title-font">EXPEDIENTE · WEB / INFRAESTRUCTURA</div>
+  <div class="folder-body">
+    <div class="tape t1"></div>
+    <div class="tape t2"></div>
+    <div class="corner tl"></div>
+    <div class="corner br"></div>
+    <div class="stamp-mark">Confidencial</div>
+
+    <header class="expediente-header">
+      <div class="brandline">
+        <div class="badge">
+          <svg viewBox="0 0 56 56" fill="none">
+            <circle cx="28" cy="28" r="26" stroke="#9c2b2b" stroke-width="1.5" opacity="0.55"/>
+            <circle cx="28" cy="28" r="20" stroke="#1f3d5c" stroke-width="1" opacity="0.5"/>
+            <path d="M28 10 L28 46 M10 28 L46 28" stroke="#9c2b2b" stroke-width="0.75" opacity="0.3"/>
+            <text x="28" y="25" text-anchor="middle" font-family="Courier Prime, monospace" font-size="9" font-weight="700" fill="#2b2320">OSINT</text>
+            <text x="28" y="37" text-anchor="middle" font-family="Courier Prime, monospace" font-size="8" font-weight="700" fill="#9c2b2b">S3GAD3</text>
+          </svg>
+        </div>
+        <div class="brand-txt">
+          <div class="brand-eyebrow">Herramientas OSINT</div>
+          <div class="brand-name">OSINT <span>S3GAD3</span></div>
+        </div>
+      </div>
+      <h1 class="title-font">RASTRO-WEB</h1>
+      <p class="sub">Expediente técnico unificado para investigar DOMINIOS, DIRECCIONES IP y URL. Detecta el tipo de indicador, adapta las fuentes OSINT, analiza localmente las URL y mantiene un único flujo de hallazgos, pivotes y grafo — todo en el navegador, sin backend ni escaneo activo.</p>
+      <div class="case-meta">
+        <span>REF: <span id="caseIdTop">—</span></span>
+        <span>MÓDULO: WEB / INFRAESTRUCTURA · DOMAIN + IP + URL</span>
+        <span id="today"></span>
+      </div>
+    </header>
+
+    <!-- ============ OBJETIVO ============ -->
+    <div class="search-box">
+      <label for="domainInput">Indicador web objetivo <span style="font-weight:400;color:var(--ink-soft)">· detección automática DOMAIN / IP / URL</span></label>
+      <div class="search-row">
+        <input type="text" id="domainInput" inputmode="url" autocomplete="off" spellcheck="false" placeholder="example.com  /  185.199.108.153  /  https://sub.example.com/ruta?id=123">
+        <button class="btn-stamp" id="btnAnalyze">▶ Analizar indicador</button>
+      </div>
+      <p class="error-line" id="inputError" hidden></p>
+      <div class="toolrow">
+        <button class="btn-stamp ghost small" id="btnClear">Limpiar</button>
+        <button class="btn-stamp ghost small" id="btnCopyDomain">Copiar indicador</button>
+        <button class="btn-stamp ghost small" id="btnExport" disabled>Exportar informe</button>
+        <button class="btn-stamp ghost small" id="btnCopyAll" disabled>Copiar consultas</button>
+        <button class="btn-stamp ghost small" id="btnOpenSelected" disabled>Abrir seleccionadas (<span id="selCount">0</span>)</button>
+        <button class="btn-stamp ghost small" id="btnHistoryPanel">Historial</button>
+        <button class="btn-stamp ghost small" id="btnFavPanel">★ Favoritos</button>
+        <div class="depth-toggle">
+          <span class="lbl">Nivel:</span>
+          <button class="depth-btn" data-depth="rapido">Rápido</button>
+          <button class="depth-btn active" data-depth="estandar">Estándar</button>
+          <button class="depth-btn" data-depth="profundo">Profundo</button>
+        </div>
+      </div>
+      <div class="status-line" id="statusLine"></div>
+      <div id="indicatorTypeBar" class="indicator-typebar" hidden><span class="indicator-pill" id="indicatorTypePill">—</span><span id="indicatorCanonical">—</span><span class="indicator-hint" id="indicatorHint"></span></div>
+    </div>
+
+    <div id="emptyState" class="empty-msg">Introduce un dominio, una IP o una URL y pulsa "Analizar indicador". RASTRO-WEB detectará automáticamente el tipo.</div>
+
+    <div id="resultsWrap" hidden>
+      <div class="stats-row" id="statsRow"></div>
+      <section class="workflow-card" id="workflowCard">
+        <div class="workflow-head"><div><h3>CONTROL DE INVESTIGACIÓN</h3><div class="graph-toolbar-note">RASTRO marca como realizados los bloques en los que hayas abierto al menos una fuente o incorporado evidencia relacionada.</div></div><div class="workflow-progress" id="workflowProgress">0%</div></div>
+        <div class="workflow-bar"><div class="workflow-fill" id="workflowFill"></div></div>
+        <div class="workflow-grid" id="workflowSteps"></div>
+        <div class="next-action" id="workflowNext">Empieza por identificar y contextualizar el indicador.</div>
+      </section>
+
+      <div class="filter-row">
+        <input type="text" id="filterInput" placeholder="Filtrar herramientas o consultas...">
+        <button class="btn-stamp ghost small" id="btnExpandAll">Expandir todas</button>
+        <button class="btn-stamp ghost small" id="btnCollapseAll">Colapsar todas</button>
+      </div>
+
+      <div class="source-legend"><span>DIRECTA: abre la consulta precargada</span><span>ASISTIDA: abre la fuente y copia el dato</span><span>BÚSQUEDA: dork o buscador</span></div>
+      <div id="categories"></div>
+      <div class="case-grid" id="caseWorkspace">
+        <section class="case-card capture-card">
+          <h3>CAPTURA INTELIGENTE → GRAFO</h3>
+          <p>Pega resultados de una fuente OSINT. RASTRO interpreta entidades y registros DNS comunes (A/AAAA, MX, NS, CNAME, PTR), detecta IP, ASN, correos, URL y hostnames, y puede incorporarlos automáticamente al grafo. La detección y el parseo son locales.</p>
+          <div class="capture-grid">
+            <div>
+              <div class="capture-source-row">
+                <div><label>Fuente del texto</label><select id="captureSource"><option value="AUTO">AUTO · detectar</option><option value="WHOXY">Whoxy</option><option value="IPCOST">IPcost / IPme</option><option value="IPINFO">IPinfo</option><option value="RIPESTAT">RIPEstat</option><option value="SECURITYTRAILS">SecurityTrails</option><option value="CENSYS">Censys</option><option value="URLSCAN">urlscan</option><option value="VIRUSTOTAL">VirusTotal</option><option value="DNS">DNS / genérico</option><option value="MANUAL">Otra / manual</option></select></div>
+                <div><label>Carácter</label><select id="captureStatus"><option value="OBSERVADO">OBSERVADO</option><option value="HISTORICO">HISTÓRICO</option><option value="INFERIDO">INFERIDO</option></select></div>
+                <div><label>Fecha histórica / snapshot (opcional)</label><input id="captureHistoricalDate" placeholder="ej. 2019-05-14"></div>
+              </div>
+              <textarea id="captureText" placeholder="Pega aquí resultados de DNS, WHOIS/RDAP, SecurityTrails, urlscan, Censys, RIPEstat, IPcost/IPme, IPinfo, Scamalytics, Whoxy, etc.&#10;&#10;Ejemplo:&#10;A 203.0.113.10&#10;MX mail.example.com&#10;AS64500&#10;admin@example.com"></textarea>
+              <div class="action-strip"><button class="btn-stamp blue small" id="btnCaptureAnalyze">Detectar hallazgos</button><button class="btn-stamp green small" id="btnCaptureAdd">+ Añadir seleccionados al grafo</button><button class="btn-stamp ghost small" id="btnCaptureClear">Limpiar</button><label class="auto-capture-toggle"><input type="checkbox" id="captureAuto" checked> AUTO → GRAFO al pegar</label></div>
+              <div class="graph-toolbar-note">La detección es local. RASTRO no lee el contenido de las webs externas ni puede saltarse las restricciones entre sitios del navegador.</div>
+            </div>
+            <div><div class="capture-summary" id="captureSummary">Sin datos analizados.</div><div class="capture-preview" id="capturePreview"><div class="empty-msg">Los hallazgos detectados aparecerán aquí.</div></div></div>
+          </div>
+        </section>
+        <section class="case-card">
+          <h3>LIBRETA DE CASO</h3>
+          <p>Notas privadas asociadas al indicador. Se guardan únicamente en localStorage.</p>
+          <textarea id="notesArea" placeholder="Observaciones, hipótesis, tareas pendientes..."></textarea>
+          <div class="action-strip"><button class="btn-stamp ghost small" id="btnSaveNotes">Guardar notas</button><button class="btn-stamp ghost small" id="btnClearNotes">Borrar</button></div>
+        </section>
+        <section class="case-card">
+          <h3>HALLAZGOS</h3>
+          <p>Añade manualmente datos descubiertos para conservarlos y reutilizarlos como pivotes.</p>
+          <div style="display:grid;grid-template-columns:120px 1fr;gap:7px"><select id="findingType"><option>DOMAIN</option><option>IP</option><option>SUBDOMINIO</option><option>EMAIL</option><option>NS</option><option>MX</option><option>ASN</option><option>URL</option><option>EMPRESA</option><option>PROVEEDOR</option><option>TITULAR</option><option>PRIVACIDAD</option><option>PAIS</option><option>FECHA</option><option>OTRO</option></select><input id="findingValue" placeholder="Dato descubierto"></div>
+          <div style="height:7px"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px"><select id="findingSource"></select><select id="findingRelation"></select></div>
+          <div style="height:7px"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px"><input id="findingEvidenceSource" placeholder="Fuente: Whoxy, RIPEstat, informe..."><select id="findingEvidenceStatus"><option>MANUAL</option><option>OBSERVADO</option><option>HISTORICO</option><option>INFERIDO</option></select></div>
+          <div class="action-strip"><button class="btn-stamp blue small" id="btnAddFinding">+ Añadir hallazgo</button></div>
+          <div id="findingsList"></div>
+        </section>
+        <section class="case-card">
+          <h3>INVESTIGAR HALLAZGO</h3>
+          <p>Selecciona o introduce un hallazgo y abre nuevas vías de investigación pasiva.</p>
+          <div style="display:grid;grid-template-columns:120px 1fr;gap:7px"><select id="pivotType"><option>DOMAIN</option><option>IP</option><option>SUBDOMINIO</option><option>EMAIL</option><option>NS</option><option>MX</option><option>ASN</option><option>URL</option><option>EMPRESA</option></select><input id="pivotValue" placeholder="IP, ASN, correo, NS..."></div>
+          <div class="action-strip"><button class="btn-stamp green small" id="btnPivot">Generar pivotes</button></div>
+          <div class="pivot-results" id="pivotResults"></div>
+        </section>
+        <section class="case-card">
+          <h3>CONSTRUCTOR DE DORKS</h3>
+          <p>Construye una consulta sin modificar el dominio objetivo.</p>
+          <input id="dorkExact" placeholder="Texto exacto (opcional)"><div style="height:7px"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px"><input id="dorkFiletype" placeholder="filetype: pdf"><input id="dorkInurl" placeholder="inurl: login"></div><div style="height:7px"></div>
+          <input id="dorkExclude" placeholder="Excluir texto (opcional)">
+          <div class="query-preview" id="dorkPreview" style="margin:10px 0 0">site:dominio</div>
+          <div class="action-strip"><button class="btn-stamp ghost small" id="btnDorkCopy">Copiar</button><button class="btn-stamp blue small" id="btnDorkGoogle">Google</button><button class="btn-stamp ghost small" id="btnDorkBing">Bing</button></div>
+        </section>
+        <section class="case-card timeline-card">
+          <h3>CRONOLOGÍA DEL EXPEDIENTE</h3>
+          <p>Ordena hallazgos con fecha histórica o fecha de observación. Distingue cuándo ocurrió/figuró el dato de cuándo fue incorporado a RASTRO.</p>
+          <div class="timeline-list" id="timelineList"><div class="empty-msg">Añade evidencia histórica o hallazgos para construir la cronología.</div></div>
+        </section>
+        <section class="case-card summary-card">
+          <h3>RESUMEN PARA EL INVESTIGADOR</h3>
+          <p>Genera una síntesis local en lenguaje natural a partir del indicador, los hallazgos y las relaciones del expediente. No usa IA externa ni envía datos fuera del navegador.</p>
+          <div class="summary-meta"><span class="summary-chip" id="summaryTargetType">—</span><span class="summary-chip" id="summaryFindingCount">0 hallazgos</span><span class="summary-chip" id="summaryRelationCount">0 relaciones</span></div>
+          <div class="summary-output" id="investigatorSummary">Analiza un indicador y añade hallazgos para generar el resumen.</div>
+          <div class="action-strip"><button class="btn-stamp green small" id="btnRefreshSummary">Actualizar resumen</button><button class="btn-stamp ghost small" id="btnCopySummary">Copiar resumen</button></div>
+        </section>
+        <section class="case-card graph-card">
+          <div class="graph-head">
+            <div><h3>GRAFO DE INVESTIGACIÓN</h3><p>Visualiza relaciones entre dominio, infraestructura, identidades y otros hallazgos. Los nodos proceden de tus hallazgos manuales; no se realizan consultas automáticas.</p></div>
+            <div class="graph-actions"><div class="graph-zoom"><button class="btn-stamp ghost small" id="btnGraphZoomOut" title="Alejar">−</button><span class="zoom-readout" id="graphZoomReadout">100%</span><button class="btn-stamp ghost small" id="btnGraphZoomIn" title="Acercar">+</button><button class="btn-stamp ghost small" id="btnGraphZoomReset" title="Zoom inicial">100%</button></div><button class="btn-stamp ghost small" id="btnGraphExpand">↗ Vista grande</button><button class="btn-stamp ghost small" id="btnGraphFit">Reordenar</button><button class="btn-stamp ghost small" id="btnGraphPivot">Investigar nodo</button><button class="btn-stamp ghost small" id="btnGraphCopy">Copiar nodo</button><button class="btn-stamp ghost small" id="btnGraphRelations">Relaciones</button><button class="btn-stamp ghost small" id="btnGraphExport">Exportar SVG</button></div>
+          </div>
+          <div class="graph-wrap"><svg id="caseGraph" viewBox="0 0 1000 520" preserveAspectRatio="xMidYMid meet" aria-label="Grafo de investigación OSINT"></svg><div class="graph-empty" id="graphEmpty">Añade hallazgos para construir el grafo. El indicador inicial aparecerá como nodo raíz y los hallazgos se relacionarán a partir de él.</div></div>
+          <div class="graph-inspector"><div><label>Origen seleccionado</label><input id="graphSelectedLabel" readonly placeholder="Selecciona un nodo"></div><div><label>Crear relación hacia</label><select id="graphTarget"></select></div><div><label>Relación</label><select id="graphRelation"></select></div><button class="btn-stamp green small" id="btnGraphLink">+ Relacionar</button></div><div class="node-actions"><div class="node-actions-title">Acciones rápidas sobre el nodo seleccionado</div><div class="action-strip" id="nodeQuickActions"></div></div>
+          <div class="graph-help">Clic: seleccionar · arrastrar: recolocar · rueda del ratón o botones +/−: zoom · Vista grande: ampliar el lienzo · doble clic: cargar el nodo en Investigar hallazgo · arrastra el fondo para desplazar el lienzo · las relaciones se guardan localmente por expediente. Puedes crear vínculos adicionales entre hallazgos cuando descubras una relación relevante.</div>
+        </section>
+      </div>
+    </div>
+
+    <div class="expediente-footer">
+      <p><b>Privacidad:</b> los indicadores se procesan localmente en tu navegador. RASTRO-WEB no tiene servidor propio ni envía consultas a ningún backend. El dominio, IP o URL solo abandona el dispositivo cuando decides abrir una fuente externa. Historial, favoritos y notas quedan en el localStorage de tu equipo.</p>
+      <p><b>Limitaciones:</b> no realiza escaneo activo, no evita CORS ni usa proxies ni API keys. Genera consultas y accesos hacia fuentes OSINT públicas para continuar la consulta manualmente.</p>
+      <p><b>Disclaimer:</b> herramienta de uso interno autorizado para investigación de ciberinteligencia y cibercrimen. El usuario es responsable del uso de las fuentes externas y del cumplimiento de la legislación aplicable a su investigación.</p>
+    </div>
+  </div>
+</div>
+
+<template id="tplPlatCell">
+  <div class="plat-cell">
+    <label class="sel-check"><input type="checkbox" class="qsel" title="Seleccionar"></label>
+    <a class="plat-btn" target="_blank" rel="noopener noreferrer"><span class="mode-badge"></span><span class="pname"></span><span class="tag"></span></a>
+    <div class="plat-actions"><button class="copy-mini">⧉ copiar</button><button class="fav-mini" title="Favorito">☆</button></div>
+  </div>
+</template>
+
+<script>
+/* ============================================================
+   RASTRO-WEB v2.0 — OSINT S3GAD3
+   100% cliente · sin backend · sin API keys · sin escaneo activo
+   ============================================================ */
+
+const ENGINES = {
+  google:q=>`https://www.google.com/search?q=${encodeURIComponent(q)}`,
+  gnews:q=>`https://www.google.com/search?q=${encodeURIComponent(q)}&tbm=nws`,
+  bing:q=>`https://www.bing.com/search?q=${encodeURIComponent(q)}`,
+  ddg:q=>`https://duckduckgo.com/?q=${encodeURIComponent(q)}`,
+  brave:q=>`https://search.brave.com/search?q=${encodeURIComponent(q)}`,
+  yahoo:q=>`https://search.yahoo.com/search?p=${encodeURIComponent(q)}`,
+  yandex:q=>`https://yandex.com/search/?text=${encodeURIComponent(q)}`,
+  github:q=>`https://github.com/search?q=${encodeURIComponent(q)}&type=repositories`,
+  githubcode:q=>`https://github.com/search?q=${encodeURIComponent(q)}&type=code`
+};
+
+const COMMON_MULTI_SUFFIXES = new Set([
+  'co.uk','org.uk','me.uk','ac.uk','gov.uk','ltd.uk','plc.uk','net.uk','sch.uk',
+  'com.au','net.au','org.au','edu.au','gov.au','asn.au','id.au',
+  'co.jp','ne.jp','or.jp','ac.jp','go.jp','ed.jp',
+  'com.br','net.br','org.br','gov.br','edu.br',
+  'com.mx','org.mx','gob.mx','edu.mx','net.mx',
+  'com.ar','org.ar','gob.ar','edu.ar','net.ar',
+  'co.nz','net.nz','org.nz','govt.nz','ac.nz',
+  'co.za','org.za','net.za','gov.za','ac.za',
+  'com.es','nom.es','org.es','gob.es','edu.es',
+  'com.co','net.co','nom.co','org.co','gov.co','edu.co',
+  'com.tr','biz.tr','info.tr','org.tr','gen.tr','web.tr',
+  'co.in','firm.in','net.in','org.in','gen.in','ind.in',
+  'com.sg','net.sg','org.sg','gov.sg','edu.sg',
+  'com.cn','net.cn','org.cn','gov.cn','edu.cn',
+  'com.hk','net.hk','org.hk','gov.hk','edu.hk',
+  'com.tw','net.tw','org.tw','idv.tw','edu.tw','gov.tw'
+]);
+
+const state={
+  domain:null, depth:'estandar', selected:new Set(), filter:'',
+  favorites:loadJSON('rd_favorites',[]), history:loadJSON('rd_history',[]),
+  notes:loadJSON('rd_notes',{}), findings:loadJSON('rd_findings',{}), opened:loadJSON('rd_opened',{}),
+  graphLinks:loadJSON('rd_graph_links',{}), graphPositions:loadJSON('rd_graph_positions',{}), graphSelected:null
+};
+const DEPTH_LIMITS={rapido:4,estandar:9,profundo:999};
+const $=s=>document.querySelector(s);
+const domainInput=$('#domainInput'), inputError=$('#inputError'), emptyState=$('#emptyState'), resultsWrap=$('#resultsWrap'), statsRow=$('#statsRow'), categoriesEl=$('#categories'), filterInput=$('#filterInput'), selCountEl=$('#selCount'), statusLine=$('#statusLine');
+let statusTimer;
+
+function escapeHTML(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function loadJSON(k,f){try{const v=localStorage.getItem(k);return v?JSON.parse(v):f}catch{return f}}
+function saveJSON(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
+function status(msg){statusLine.textContent=msg;clearTimeout(statusTimer);statusTimer=setTimeout(()=>statusLine.textContent='',2600)}
+function safeText(v){return String(v??'')}
+function copyText(text){
+  const t=safeText(text);
+  if(navigator.clipboard?.writeText){navigator.clipboard.writeText(t).then(()=>status('Copiado al portapapeles ✔')).catch(()=>legacyCopy(t));}
+  else legacyCopy(t);
+}
+function legacyCopy(text){const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');status('Copiado al portapapeles ✔')}catch{status('No se pudo copiar')}ta.remove()}
+function openExternal(url){window.open(url,'_blank','noopener,noreferrer')}
+
+function registrableParts(host){
+  const parts=host.split('.').filter(Boolean); if(parts.length<2)return null;
+  const last2=parts.slice(-2).join('.');
+  let suffix,base,sub;
+  if(parts.length>=3 && COMMON_MULTI_SUFFIXES.has(last2)){suffix=last2;base=parts.slice(-3).join('.');sub=parts.slice(0,-3).join('.');}
+  else {suffix=parts.at(-1);base=parts.slice(-2).join('.');sub=parts.slice(0,-2).join('.');}
+  return {base,sub:sub||'',tld:'.'+suffix,rootName:base.slice(0,-(suffix.length+1))};
+}
+
+function normalizeDomain(raw){
+  if(!raw)return null; let s=raw.trim(); if(!s)return null;
+  if(/\s/.test(s))return null;
+  if(/^[^/]+@[^/]+$/.test(s))s=s.split('@').pop();
+  if(!/^[a-z][a-z0-9+.-]*:\/\//i.test(s))s='https://'+s;
+  let u; try{u=new URL(s)}catch{return null}
+  let full=u.hostname.toLowerCase().replace(/\.$/,'').replace(/^www\./,'www.');
+  if(!full.includes('.')||full.length>253)return null;
+  const labels=full.split('.');
+  if(labels.some(l=>!l||l.length>63||l.startsWith('-')||l.endsWith('-')||!/^[a-z0-9-]+$/i.test(l)))return null;
+  const p=registrableParts(full); if(!p)return null;
+  return {full,...p,unicode:full};
+}
+
+
+function validIPv4(s){
+  const p=s.split('.');return p.length===4&&p.every(x=>/^\d{1,3}$/.test(x)&&Number(x)>=0&&Number(x)<=255&&String(Number(x))===x.replace(/^0+(?=\d)/,''));
+}
+function validIPv6(s){
+  if(!s||!s.includes(':')||/[^0-9a-f:.]/i.test(s))return false;
+  try{const u=new URL(`http://[${s}]/`);return !!u.hostname}catch{return false}
+}
+function classifyIP(ip){
+  if(validIPv4(ip)){
+    const a=ip.split('.').map(Number);let scope='PÚBLICA';
+    if(a[0]===10||a[0]===127||(a[0]===169&&a[1]===254)||(a[0]===172&&a[1]>=16&&a[1]<=31)||(a[0]===192&&a[1]===168))scope='PRIVADA/LOCAL';
+    else if((a[0]===100&&a[1]>=64&&a[1]<=127))scope='CGNAT';
+    else if((a[0]===192&&a[1]===0&&a[2]===2)||(a[0]===198&&a[1]===51&&a[2]===100)||(a[0]===203&&a[1]===0&&a[2]===113))scope='DOCUMENTACIÓN';
+    else if(a[0]===0||a[0]>=224)scope='RESERVADA/ESPECIAL';
+    return{version:'IPv4',scope};
+  }
+  const low=ip.toLowerCase();let scope='PÚBLICA';
+  if(low==='::'||low==='::1'||low.startsWith('fc')||low.startsWith('fd')||/^fe[89ab]/.test(low))scope='PRIVADA/LOCAL';
+  else if(low.startsWith('2001:db8'))scope='DOCUMENTACIÓN';
+  return{version:'IPv6',scope};
+}
+function normalizeIP(raw){
+  let s=raw.trim().replace(/^\[|\]$/g,'');if(!validIPv4(s)&&!validIPv6(s))return null;
+  if(validIPv6(s)){try{s=new URL(`http://[${s}]/`).hostname.replace(/^\[|\]$/g,'').toLowerCase()}catch{}}
+  const meta=classifyIP(s);return{type:'IP',raw,full:s,canonical:s,base:s,sub:'',tld:'—',rootName:s,unicode:s,...meta};
+}
+function normalizeURLTarget(raw){
+  let s=raw.trim();if(!s)return null;
+  if(!/^[a-z][a-z0-9+.-]*:\/\//i.test(s))s='https://'+s;
+  let u;try{u=new URL(s)}catch{return null}
+  if(!['http:','https:'].includes(u.protocol))return null;
+  const hostname=u.hostname.replace(/^\[|\]$/g,'').toLowerCase();
+  const ip=normalizeIP(hostname),dom=ip?null:normalizeDomain(hostname);
+  if(!ip&&!dom)return null;
+  const canonical=u.href;
+  const params=[...u.searchParams.entries()];
+  return{type:'URL',raw,full:canonical,canonical,base:dom?.base||hostname,sub:dom?.sub||'',tld:dom?.tld||'—',rootName:dom?.rootName||hostname,unicode:dom?.unicode||hostname,url:{protocol:u.protocol.replace(':','').toUpperCase(),hostname,host:u.host,port:u.port||(['https:'].includes(u.protocol)?'443':'80'),pathname:u.pathname||'/',search:u.search,hash:u.hash,username:u.username,password:u.password,params},hostIsIP:!!ip,hostIP:ip,domain:dom};
+}
+function detectTarget(raw){
+  const s=(raw||'').trim();if(!s)return null;
+  const ip=normalizeIP(s);if(ip)return ip;
+  const urlish=/^[a-z][a-z0-9+.-]*:\/\//i.test(s)||/[/?#]/.test(s)||(/^\[[0-9a-f:]+\](?::\d+)?/i.test(s))||(/^\d{1,3}(?:\.\d{1,3}){3}:\d+/.test(s));
+  if(urlish){const u=normalizeURLTarget(s);if(u)return u}
+  const d=normalizeDomain(s);if(d)return{type:'DOMAIN',raw,full:d.full,canonical:d.full,...d};
+  return null;
+}
+function targetLabel(t){return t?.type==='IP'?'DIRECCIÓN IP':t?.type==='URL'?'URL':'DOMINIO'}
+function caseKey(t=state.domain){return t?`${t.type}:${t.full}`:''}
+function safeFilename(t=state.domain){const s=(t?.base||t?.full||'indicador').replace(/^https?:\/\//i,'').replace(/[^a-z0-9._-]+/gi,'_').slice(0,80);return s||'indicador'}
+function domainFromTarget(t=state.domain){if(!t)return null;if(t.type==='DOMAIN')return t;if(t.type==='URL')return t.domain||null;return null}
+
+function generateVariants(base){
+  const dot=base.indexOf('.'); const name=base.slice(0,dot), suffix=base.slice(dot+1); const out=new Set();
+  for(let i=0;i<name.length;i++)out.add(name.slice(0,i)+name.slice(i+1));
+  for(let i=0;i<name.length;i++)out.add(name.slice(0,i)+name[i]+name.slice(i));
+  for(let i=0;i<name.length-1;i++){const a=[...name];[a[i],a[i+1]]=[a[i+1],a[i]];out.add(a.join(''))}
+  if(name.length>3){for(let i=2;i<Math.min(name.length-1,8);i++)out.add(name.slice(0,i)+'-'+name.slice(i))}
+  const swaps={o:'0',l:'1',i:'1',e:'3',a:'4',s:'5'};Object.entries(swaps).forEach(([a,b])=>{if(name.includes(a))out.add(name.replace(a,b))});
+  out.delete(name); const same=[...out].filter(v=>v.length>1).slice(0,20).map(v=>`${v}.${suffix}`);
+  const alt=['com','net','org','co','info','biz','es','io','xyz','online'].filter(t=>t!==suffix).slice(0,8).map(t=>`${name}.${t}`);
+  return [...new Set([...same,...alt])];
+}
+
+function mkQuery(name,query,tag,urlFn=ENGINES.google,style='search',desc=''){return{name,query,tag,url:urlFn(query),style,mode:'search',desc}}
+function mkTool(name,url,tag='fuente',opts={}){return{name,query:opts.copyValue||url,tag,url,style:opts.style||'direct',mode:opts.mode||'direct',copyValue:opts.copyValue||'',desc:opts.desc||'',scope:opts.scope||'root'}}
+function assisted(name,url,value,tag='fuente',desc=''){return mkTool(name,url,tag,{mode:'manual',style:'manual',copyValue:value,desc})}
+
+
+function urlLocalFacts(t){
+  if(t.type!=='URL')return[];const u=t.url,flags=[];
+  if(u.username||u.password)flags.push(['Credenciales embebidas','warn']);
+  if(t.hostIsIP)flags.push(['Host expresado como IP','warn']);
+  if(/^xn--|\.xn--/i.test(u.hostname))flags.push(['Punycode / IDN','warn']);
+  if(!['80','443'].includes(u.port))flags.push([`Puerto no estándar: ${u.port}`,'warn']);
+  if(u.protocol==='HTTP')flags.push(['HTTP sin TLS','warn']);
+  if(/%[0-9a-f]{2}/i.test(t.full))flags.push(['URL encoded','']);
+  if(u.hash)flags.push(['Fragmento # presente','']);
+  return flags;
+}
+const EXTRA_CATS={
+ ip_map:{label:'Mapa de pivotes',pivots:true,build(){return{}}},
+ ip_ident:{label:'Identificación IP',localip:true,build(t){return{intro:'Clasificación local del indicador. No implica geolocalización ni atribución.',groups:[{title:'Comprobaciones básicas',items:[mkQuery('Buscar IP exacta',`"${t.full}"`,'búsqueda'),mkTool('RDAP.org',`https://rdap.org/ip/${encodeURIComponent(t.full)}`,'★ principal',{desc:'Registro y asignación de recursos IP'}),mkTool('RIPEstat',`https://stat.ripe.net/${encodeURIComponent(t.full)}`,'★ principal',{desc:'Routing, ASN, prefijos y contexto de red'})]}]}}},
+
+ ip_privacy:{label:'Proveedor / VPN / Proxy / Tor',build(t){const v=t.full;return{
+   intro:'Contrasta proveedor, ASN y señales de anonimización. Hosting/datacenter no equivale por sí solo a VPN.',
+   groups:[
+     {title:'Proveedor y tipo de conexión',items:[
+       assisted('★ IPcost / IPme','https://ipcost.com/',v,'★ principal','La web no ofrece un deep-link público estable documentado; RASTRO copia la IP y abre la fuente para pegarla'),
+       mkTool('★ IPinfo',`https://ipinfo.io/${encodeURIComponent(v)}`,'★ principal',{desc:'Proveedor, ASN y datos de red; las señales avanzadas de privacidad dependen del producto/plan'}),
+       assisted('★ Scamalytics IP','https://scamalytics.com/ip',v,'★ contraste','Proveedor, proxy/Tor y valoración de riesgo según disponibilidad'),
+       mkTool('○ RIPEstat',`https://stat.ripe.net/${encodeURIComponent(v)}`,'○ registro',{desc:'Contraste de ASN, prefijo y operador de red'})
+     ]},
+     {title:'Comprobaciones complementarias',items:[
+       mkTool('○ AbuseIPDB',`https://www.abuseipdb.com/check/${encodeURIComponent(v)}`,'○ reputación'),
+       mkTool('○ VirusTotal',`https://www.virustotal.com/gui/ip-address/${encodeURIComponent(v)}`,'○ threat intel'),
+       mkQuery('Buscar IP + VPN',`"${v}" (VPN OR proxy OR Tor OR hosting)`,'búsqueda')
+     ]}
+   ],
+   warn:'La clasificación VPN/proxy es una señal de una fuente externa y puede cambiar con el tiempo. Para una conclusión operativa conviene contrastar al menos dos fuentes y distinguir VPN, proxy, Tor, relay y hosting/datacenter.'
+ }}},
+ ip_registry:{label:'RDAP / WHOIS / asignación',build(t){const v=t.full;return{groups:[{title:'Registro y asignación',items:[mkTool('★ RDAP.org',`https://rdap.org/ip/${encodeURIComponent(v)}`,'★ principal'),mkTool('★ RIPEstat',`https://stat.ripe.net/${encodeURIComponent(v)}`,'★ principal'),assisted('○ WhoisXML DRS','https://drs.whoisxmlapi.com/',v,'○ alternativa','Investigación inversa y datos históricos; puede requerir cuenta/créditos'),assisted('○ ICANN / IANA RDAP bootstrap','https://www.iana.org/assignments/rdap-dns/rdap-dns.xhtml',v,'○ referencia','Referencia de RDAP')]}]}}},
+ ip_routing:{label:'ASN / BGP / netblock',build(t){const v=t.full;return{groups:[{title:'Routing e infraestructura',items:[mkTool('★ RIPEstat',`https://stat.ripe.net/${encodeURIComponent(v)}`,'★ principal'),assisted('○ Hurricane Electric BGP Toolkit','https://bgp.he.net/',v,'○ alternativa','Pega la IP o el ASN hallado'),mkQuery('Google · IP + ASN',`"${v}" ASN`,'búsqueda')]}]}}},
+ ip_exposure:{label:'Internet exposure',build(t){const v=t.full;return{intro:'Datos observados por terceros. La ausencia de resultados no demuestra que no existan servicios.',groups:[{title:'Hosts y servicios',items:[mkTool('★ Shodan',`https://www.shodan.io/host/${encodeURIComponent(v)}`,'★ principal'),assisted('★ Censys Platform','https://platform.censys.io/',v,'★ principal','Búsqueda de host y servicios en la plataforma actual de Censys'),mkTool('○ VirusTotal',`https://www.virustotal.com/gui/ip-address/${encodeURIComponent(v)}`,'○ alternativa')]}]}}},
+ ip_reverse:{label:'Reverse DNS / dominios relacionados',build(t){const v=t.full;return{warn:'Una coincidencia por IP o DNS compartido es una pista técnica, no prueba titularidad común.',groups:[{title:'Pivotes inversos',items:[mkTool('★ ViewDNS Reverse IP',`https://viewdns.info/reverseip/?host=${encodeURIComponent(v)}&t=1`,'★ principal'),mkTool('○ DNSlytics Reverse IP',`https://dnslytics.com/reverse-ip/${encodeURIComponent(v)}`,'○ alternativa'),assisted('★ WhoisXML DRS','https://drs.whoisxmlapi.com/',v,'★ principal','Reverse IP / DNS histórico según disponibilidad'),mkQuery('PTR / reverse DNS',`"${v}" (PTR OR "reverse DNS")`,'búsqueda')]}]}}},
+ ip_reputation:{label:'Reputación / Threat Intelligence',build(t){const v=t.full;return{groups:[{title:'Reputación',items:[mkTool('★ VirusTotal',`https://www.virustotal.com/gui/ip-address/${encodeURIComponent(v)}`,'★ principal'),mkTool('★ AbuseIPDB',`https://www.abuseipdb.com/check/${encodeURIComponent(v)}`,'★ principal'),mkTool('○ AlienVault OTX',`https://otx.alienvault.com/indicator/ip/${encodeURIComponent(v)}`,'○ alternativa'),assisted('○ Spamhaus Check','https://check.spamhaus.org/',v,'○ alternativa','Introduce la IP en el comprobador')]}]}}},
+ ip_history:{label:'Histórico / Passive DNS',build(t){const v=t.full;return{groups:[{title:'Histórico',items:[assisted('★ SecurityTrails','https://securitytrails.com/',v,'★ principal','Investiga historical DNS / IP neighbors según plan'),assisted('★ WhoisXML DRS','https://drs.whoisxmlapi.com/',v,'★ principal','Passive DNS e investigación inversa según plan'),assisted('○ Censys Platform','https://platform.censys.io/',v,'○ alternativa','Puede conservar contexto histórico de hosts')]}]}}},
+ ip_search:{label:'Indexación / menciones',build(t){const v=t.full;return{groups:[{title:'Buscadores',items:[mkQuery('Google exacto',`"${v}"`,'búsqueda'),mkQuery('Bing exacto',`"${v}"`,'búsqueda',ENGINES.bing),mkQuery('GitHub',`"${v}"`,'código',ENGINES.github)]}]}}},
+
+ url_map:{label:'Mapa de pivotes',pivots:true,build(){return{}}},
+ url_local:{label:'Análisis local de URL',urlinfo:true,build(){return{}}},
+ url_reputation:{label:'Reputación / seguridad',build(t){const v=t.full;return{intro:'Estas fuentes reciben la URL únicamente cuando decides abrirlas.',groups:[{title:'Reputación',items:[assisted('★ VirusTotal URL','https://www.virustotal.com/gui/home/url',v,'★ principal','Pega la URL para consultar o analizar'),assisted('★ URLhaus','https://urlhaus.abuse.ch/browse/',v,'★ principal','Consulta indicadores maliciosos conocidos'),assisted('○ Google Safe Browsing','https://transparencyreport.google.com/safe-browsing/search',v,'○ alternativa','Pega la URL en el buscador'),mkQuery('Google exacto',`"${v}"`,'búsqueda')]}]}}},
+ url_observation:{label:'Observación web / infraestructura',build(t){const v=t.full,h=t.url.hostname;return{groups:[{title:'Observación y contexto técnico',items:[mkTool('★ urlscan.io · búsqueda',`https://urlscan.io/search/#page.url%3A${encodeURIComponent(v)}`,'★ principal',{desc:'Buscar observaciones existentes; no lanza un nuevo scan desde RASTRO'}),assisted('★ Censys Platform','https://platform.censys.io/',h,'★ principal','Investiga hostname/web property/host'),mkTool('★ Shodan hostname',`https://www.shodan.io/search?query=${encodeURIComponent('hostname:'+h)}`,'★ principal'),mkTool('○ VirusTotal host',t.hostIsIP?`https://www.virustotal.com/gui/ip-address/${encodeURIComponent(h)}`:`https://www.virustotal.com/gui/domain/${encodeURIComponent(h)}`,'○ alternativa')]}]}}},
+ url_history:{label:'Histórico / cachés',build(t){const v=t.full,h=t.url.hostname;return{groups:[{title:'Histórico',items:[mkTool('★ Wayback · URL exacta',`https://web.archive.org/web/*/${encodeURIComponent(v)}`,'★ principal'),mkTool('★ Wayback · host',`https://web.archive.org/web/*/https://${encodeURIComponent(h)}/*`,'★ principal'),mkTool('○ urlscan.io',`https://urlscan.io/search/#domain%3A${encodeURIComponent(h)}`,'○ alternativa')]}]}}},
+ url_host:{label:'Dominio / IP / infraestructura del host',build(t){const h=t.url.hostname,d=t.domain;const items=[];if(t.hostIsIP){items.push(mkTool('★ RIPEstat',`https://stat.ripe.net/${encodeURIComponent(h)}`,'★ principal'),mkTool('★ RDAP.org',`https://rdap.org/ip/${encodeURIComponent(h)}`,'★ principal'),mkTool('★ Shodan',`https://www.shodan.io/host/${encodeURIComponent(h)}`,'★ principal'))}else{items.push(mkTool('★ SecurityTrails',`https://securitytrails.com/domain/${encodeURIComponent(d?.base||h)}/dns`,'★ principal',{desc:'DNS e histórico según plan'}),mkTool('★ ICANN Lookup',`https://lookup.icann.org/en/lookup?name=${encodeURIComponent(d?.base||h)}`,'★ principal'),mkTool('★ urlscan host',`https://urlscan.io/search/#domain%3A${encodeURIComponent(h)}`,'★ principal'),mkTool('○ CTLogs.dev',`https://ctlogs.dev/search?q=${encodeURIComponent('*.'+(d?.base||h))}`,'○ alternativa'))}return{groups:[{title:`Host: ${h}`,items}]}}},
+ url_params:{label:'Parámetros / redirecciones',build(t){const items=[];t.url.params.forEach(([k,v])=>{if(/^https?:\/\//i.test(decodeURIComponentSafe(v)))items.push(mkQuery(`URL en parámetro: ${k}`,`"${decodeURIComponentSafe(v)}"`,'pivote'));else if(v)items.push(mkQuery(`Parámetro ${k}`,`"${v}"`,'pivote'))});return{intro:'Los valores se analizan como texto. No se siguen redirecciones automáticamente.',groups:items.length?[{title:'Pivotes desde parámetros',items}]:[]}}},
+ url_search:{label:'Indexación / referencias',build(t){const v=t.full,h=t.url.hostname;return{groups:[{title:'Búsquedas',items:[mkQuery('Google URL exacta',`"${v}"`,'búsqueda'),mkQuery('Google host',`"${h}"`,'búsqueda'),mkQuery('Bing URL',`"${v}"`,'búsqueda',ENGINES.bing),mkQuery('GitHub URL/host',`"${h}"`,'código',ENGINES.github)]}]}}}
+};
+function decodeURIComponentSafe(v){try{return decodeURIComponent(v)}catch{return v}}
+
+const CATS={
+ overview:{label:'Visión general',build(d){const q=`"${d.full}"`;return{groups:[{title:'Buscadores generales',items:[mkQuery('Google',q,'buscador',ENGINES.google),mkQuery('Bing',q,'buscador',ENGINES.bing),mkQuery('DuckDuckGo',q,'buscador',ENGINES.ddg),mkQuery('Brave Search',q,'buscador',ENGINES.brave),mkQuery('Yahoo',q,'buscador',ENGINES.yahoo),mkQuery('Yandex',q,'buscador',ENGINES.yandex),mkQuery('Google sin comillas',d.full,'buscador',ENGINES.google)]}]}}},
+ dorks:{label:'Google Dorks',build(d){const base=d.full,fts=['pdf','doc','docx','xls','xlsx','ppt','pptx','txt','csv','xml','json','log','conf','config','bak','sql','env'],terms=['login','admin','contacto','email','teléfono','aviso legal','privacidad','"quiénes somos"','"about us"','empleados','staff','team','API','docs','documentación'];return{groups:[{title:'Consultas base',items:[mkQuery('site: dominio',`site:${base}`,'dork'),mkQuery('site: sin www',`site:${base} -www`,'dork'),mkQuery('Dominio exacto',`"${base}"`,'dork'),mkQuery('Correo del dominio',`"@${d.base}"`,'dork'),mkQuery('inurl: dominio',`inurl:${base}`,'dork'),mkQuery('intitle: dominio',`intitle:"${base}"`,'dork')]},{title:'Filetype dorks',items:fts.map(ft=>mkQuery(`filetype:${ft}`,`site:${base} filetype:${ft}`,'documento'))},{title:'Contenido / administración',items:terms.map(t=>mkQuery(`site: ${t}`,`site:${base} ${t}`,'dork'))}]}}},
+ documents:{label:'Documentos',build(d){const f=['pdf','doc','docx','xls','xlsx','ppt','pptx','csv','txt'];return{intro:'Documentación indexada y menciones públicas vinculadas al dominio.',groups:[{title:'Documentos indexados',items:f.map(x=>mkQuery(`filetype:${x}`,`site:${d.full} filetype:${x}`,'documento'))},{title:'Menciones externas',items:[mkQuery('PDF con dominio',`"${d.base}" filetype:pdf`,'documento'),mkQuery('XLS con dominio',`"${d.base}" filetype:xls`,'documento'),mkQuery('DOCX con dominio',`"${d.base}" filetype:docx`,'documento')]}]}}},
+ emails:{label:'Correos electrónicos',build(d){const at='@'+d.base;return{groups:[{title:'Correos relacionados',items:[mkQuery('Menciones de @dominio',`"${at}"`,'dork'),mkQuery('Email + contacto',`"${at}" email`,'dork'),mkQuery('LinkedIn',`"${at}" LinkedIn`,'social'),mkQuery('GitHub (Google)',`"${at}" GitHub`,'código'),mkQuery('GitHub nativo',at,'código',ENGINES.github,'direct'),mkQuery('GitHub código',at,'código',ENGINES.githubcode,'direct'),mkQuery('PDF con correo',`"${at}" filetype:pdf`,'documento'),mkQuery('CV / resume',`"${at}" (CV OR resume)`,'dork'),mkQuery('Bing: @dominio',`"${at}"`,'buscador',ENGINES.bing)]}]}}},
+ technical:{label:'🔬 Inteligencia técnica',build(d){const b=d.base,h=d.full;return{intro:'Núcleo técnico recomendado. ★ PRINCIPAL = primera consulta; ○ ALTERNATIVA = contraste; ⚠ LIMITADA = puede exigir cuenta, créditos o sufrir inestabilidad. Los resultados externos se incorporan mediante Captura inteligente.',groups:[
+  {title:'1 · DNS actual',items:[
+    mkTool('★ DNSDumpster','https://dnsdumpster.com/','★ principal',{mode:'manual',style:'manual',copyValue:b,desc:'Mapa DNS y host discovery; consulta asistida'}),
+    mkTool('★ MXToolbox',`https://mxtoolbox.com/SuperTool.aspx?action=a%3a${encodeURIComponent(b)}&run=toolpage`,'★ principal',{desc:'DNS y diagnóstico'}),
+    mkTool('○ Google Admin Toolbox Dig','https://toolbox.googleapps.com/apps/dig/','○ alternativa',{mode:'manual',style:'manual',copyValue:b}),
+    mkTool('○ DNSlytics',`https://dnslytics.com/domain/${encodeURIComponent(b)}`,'○ alternativa',{desc:'DNS e infraestructura relacionada'}),
+    mkTool('○ Robtex',`https://www.robtex.com/dns-lookup/${encodeURIComponent(b)}`,'○ alternativa',{desc:'Vista técnica DNS/IP'})
+  ]},
+  {title:'2 · DNS histórico / atribución técnica',items:[
+    mkTool('★ SecurityTrails',`https://securitytrails.com/domain/${encodeURIComponent(b)}/history/a`,'★ principal',{desc:'DNS histórico; algunas funciones requieren cuenta'}),
+    mkTool('★ WhoisXML Domain Research Suite','https://drs.whoisxmlapi.com/','★ principal',{mode:'manual',style:'manual',copyValue:b,desc:'WHOIS/DNS histórico, Reverse IP/MX/NS/WHOIS; cuenta/créditos según función'}),
+    mkTool('○ DNSlytics',`https://dnslytics.com/domain/${encodeURIComponent(b)}`,'○ alternativa')
+  ]},
+  {title:'3 · Hostnames / Certificate Transparency',items:[
+    mkTool('★ urlscan Hostnames','https://urlscan.io/','★ principal',{mode:'manual',style:'manual',copyValue:b,desc:'Dataset de hostnames con CT, passive DNS, scans, zone files y certificados; funciones según plan'}),
+    mkTool('★ Censys Platform','https://platform.censys.io/','★ principal',{mode:'manual',style:'manual',copyValue:b,desc:'Hosts, web properties y certificados; pegar dominio en búsqueda'}),
+    mkTool('○ CTLogs.dev',`https://ctlogs.dev/search?q=${encodeURIComponent('*.'+b)}`,'○ alternativa'),
+    mkTool('⚠ crt.sh',`https://crt.sh/?q=%25.${encodeURIComponent(b)}`,'⚠ inestable',{style:'warn',desc:'Útil para CT, pero puede devolver 502/timeout'})
+  ]},
+  {title:'4 · Internet exposure / servicios',items:[
+    mkTool('★ Censys Platform','https://platform.censys.io/','★ principal',{mode:'manual',style:'manual',copyValue:h,desc:'Búsqueda unificada de host, web y certificados'}),
+    mkTool('★ Shodan',`https://www.shodan.io/search?query=${encodeURIComponent('hostname:'+h)}`,'★ principal',{desc:'Servicios observados e infraestructura'}),
+    mkTool('★ urlscan.io',`https://urlscan.io/search/#domain%3A${encodeURIComponent(h)}`,'★ principal',{desc:'Observaciones web, recursos y relaciones'}),
+    mkTool('○ VirusTotal',`https://www.virustotal.com/gui/domain/${encodeURIComponent(b)}/relations`,'○ alternativa',{desc:'Relaciones y contexto de reputación'})
+  ]},
+  {title:'5 · IP / ASN / routing',items:[
+    mkTool('★ RIPEstat',`https://stat.ripe.net/${encodeURIComponent(b)}`,'★ principal',{desc:'IP/ASN/routing; si el dominio no resuelve en la UI, usa una IP hallada como pivote'}),
+    mkTool('★ Shodan',`https://www.shodan.io/search?query=${encodeURIComponent('hostname:'+h)}`,'★ principal'),
+    mkTool('★ Censys Platform','https://platform.censys.io/','★ principal',{mode:'manual',style:'manual',copyValue:h}),
+    mkTool('○ Hurricane Electric BGP Toolkit','https://bgp.he.net/','○ alternativa',{mode:'manual',style:'manual',copyValue:b})
+  ]},
+  {title:'6 · Histórico web',items:[
+    mkTool('★ Wayback Machine',`https://web.archive.org/web/*/https://${encodeURIComponent(h)}/*`,'★ principal'),
+    mkTool('★ urlscan.io',`https://urlscan.io/search/#domain%3A${encodeURIComponent(h)}`,'★ principal')
+  ]},
+  {title:'7 · Relaciones de infraestructura',items:[
+    mkTool('★ WhoisXML DRS · Reverse IP/MX/NS/WHOIS','https://drs.whoisxmlapi.com/','★ principal',{mode:'manual',style:'manual',copyValue:b,desc:'Pivotes inversos; cuenta/créditos según herramienta'}),
+    mkTool('★ SecurityTrails',`https://securitytrails.com/domain/${encodeURIComponent(b)}/dns`,'★ principal',{desc:'DNS, histórico y relaciones según plan'}),
+    mkTool('○ ViewDNS','https://viewdns.info/','○ alternativa',{mode:'manual',style:'manual',copyValue:b}),
+    mkTool('○ DNSlytics',`https://dnslytics.com/domain/${encodeURIComponent(b)}`,'○ alternativa')
+  ]}
+]}}},
+
+ ownership_history:{label:'Histórico WHOIS / antiguos titulares',build(d){const b=d.base;return{
+   intro:'Busca snapshots WHOIS históricos para detectar cambios de registrante, organización, correo, registrar y nameservers. Los datos históricos deben interpretarse según su fecha y disponibilidad.',
+   groups:[
+     {title:'Histórico de propiedad',items:[
+       mkTool('★ Whoxy · WHOIS + History',`https://www.whoxy.com/${encodeURIComponent(b)}`,'★ principal',{desc:'Abre directamente la ficha del dominio en Whoxy; desde ella puedes consultar WHOIS e histórico disponible'}),
+       assisted('★ WhoisXML · WHOIS History','https://drs.whoisxmlapi.com/',b,'★ principal','WHOIS histórico y pivotes; puede requerir cuenta/créditos'),
+       assisted('○ SecurityTrails · histórico DNS','https://securitytrails.com/',b,'○ contraste','Complementa propiedad con cambios de infraestructura DNS')
+     ]},
+     {title:'Reverse WHOIS desde un hallazgo',items:[
+       assisted('★ Whoxy · Reverse WHOIS','https://www.whoxy.com/reverse-whois/',b,'★ principal','Tras hallar un nombre, empresa o email, úsalo como nuevo pivote para localizar otros dominios históricos'),
+       assisted('○ WhoisXML · Reverse WHOIS','https://drs.whoisxmlapi.com/',b,'○ alternativa','Pivote inverso por identidad/organización según plan')
+     ]}
+   ],
+   warn:'Un WHOIS histórico prueba que un dato apareció en un registro archivado en una fecha concreta; no demuestra por sí solo titularidad actual ni control efectivo del dominio.'
+ }}},
+ subdomains:{label:'Subdominios',build(d){const b=d.base;return{intro:'Fuentes pasivas. Las herramientas que no admiten deep-link se marcan como ASISTIDA y copian el dominio.',groups:[{title:'Fuentes de subdominios',items:[mkTool('crt.sh',`https://crt.sh/?q=%25.${encodeURIComponent(b)}`,'certificado',{desc:'Certificate Transparency · puede devolver 502/timeout'}),mkTool('CTLogs.dev',`https://ctlogs.dev/search?q=${encodeURIComponent('*.'.concat(b))}`,'certificado',{desc:'Alternativa CT cuando crt.sh no responde'}),mkTool('SecurityTrails',`https://securitytrails.com/domain/${encodeURIComponent(b)}/dns`,'fuente',{desc:'Puede requerir cuenta'}),assisted('DNSDumpster','https://dnsdumpster.com/',b,'dns','Introduce el dominio en la web'),assisted('HackerTarget','https://hackertarget.com/find-dns-host-records/',b,'dns','Consulta manual'),mkTool('RapidDNS',`https://rapiddns.io/subdomain/${encodeURIComponent(b)}#result`,'fuente'),mkTool('AlienVault OTX',`https://otx.alienvault.com/indicator/domain/${encodeURIComponent(b)}`,'threat intel'),mkTool('urlscan.io',`https://urlscan.io/search/#domain%3A${encodeURIComponent(b)}`,'archivo'),mkTool('VirusTotal',`https://www.virustotal.com/gui/domain/${encodeURIComponent(b)}/relations`,'threat intel'),mkTool('Shodan',`https://www.shodan.io/search?query=${encodeURIComponent('hostname:'+b)}`,'infra'),mkTool('Censys hosts',`https://search.censys.io/search?resource=hosts&q=${encodeURIComponent(b)}`,'infra')]},{title:'Dorks de subdominios',items:[mkQuery('site: sin www',`site:${b} -www`,'dork'),mkQuery('Wildcard',`site:*.${b}`,'dork'),mkQuery('Wildcard texto',`"*.${b}"`,'dork'),mkQuery('Mención subdominios',`"${b}" subdomain`,'dork')]}]}}},
+ certificates:{label:'Certificados TLS',build(d){const b=d.base;return{intro:'Certificate Transparency puede revelar nombres históricos incluidos en certificados.',groups:[{title:'Transparencia de certificados',items:[mkTool('crt.sh subdominios',`https://crt.sh/?q=%25.${encodeURIComponent(b)}`,'certificado',{desc:'Wildcard CT · puede devolver 502/timeout'}),mkTool('crt.sh exacto',`https://crt.sh/?q=${encodeURIComponent(b)}`,'certificado',{desc:'Consulta más ligera que el wildcard'}),mkTool('CTLogs.dev subdominios',`https://ctlogs.dev/search?q=${encodeURIComponent('*.'.concat(b))}`,'certificado',{desc:'Fallback compatible para Certificate Transparency'}),mkTool('CTLogs.dev exacto',`https://ctlogs.dev/search?q=${encodeURIComponent(b)}`,'certificado',{desc:'Fallback CT exacto'}),mkTool('Censys certificados',`https://search.censys.io/search?resource=certificates&q=${encodeURIComponent(b)}`,'certificado'),assisted('Entrust CT Search','https://ui.ctsearch.entrust.com/ui/ctsearchui',b,'certificado','Búsqueda asistida de CT')]}]}}},
+ dns:{label:'DNS Intelligence',build(d){const b=d.base;return{intro:'A, AAAA, MX, NS, TXT, SOA, CNAME, CAA, SPF y DMARC. No se resuelve DNS desde esta aplicación.',groups:[{title:'Herramientas DNS',items:[mkTool('Google Toolbox Dig',`https://toolbox.googleapps.com/apps/dig/#ANY/${encodeURIComponent(b)}`,'dns'),assisted('DNSDumpster','https://dnsdumpster.com/',b,'dns'),mkTool('MXToolbox A',`https://mxtoolbox.com/SuperTool.aspx?action=a%3a${encodeURIComponent(b)}&run=toolpage`,'dns'),mkTool('ViewDNS.info',`https://viewdns.info/dnsrecord/?domain=${encodeURIComponent(b)}`,'dns'),assisted('HackerTarget DNS','https://hackertarget.com/dns-lookup/',b,'dns'),mkTool('DNSlytics',`https://dnslytics.com/domain/${encodeURIComponent(b)}`,'dns')]}]}}},
+ whois:{label:'WHOIS / Registro',build(d){const b=d.base;return{intro:'WHOIS/RDAP moderno puede mostrar datos limitados por privacidad y políticas del registro.',groups:[{title:'Registro y RDAP',items:[mkTool('ICANN Lookup',`https://lookup.icann.org/en/lookup?q=${encodeURIComponent(b)}`,'whois'),mkTool('Whois.com',`https://www.whois.com/whois/${encodeURIComponent(b)}`,'whois'),mkTool('ViewDNS WHOIS',`https://viewdns.info/whois/?domain=${encodeURIComponent(b)}`,'whois'),mkTool('DomainTools',`https://whois.domaintools.com/${encodeURIComponent(b)}`,'whois'),mkTool('RDAP.org',`https://rdap.org/domain/${encodeURIComponent(b)}`,'whois')]},{title:'Dorks de registro',items:[mkQuery('Registrar',`"${b}" registrar`,'dork'),mkQuery('Registrant',`"${b}" registrant`,'dork'),mkQuery('WHOIS',`"${b}" WHOIS`,'dork'),mkQuery('Creation date',`"${b}" "creation date"`,'dork')]}]}}},
+ archive:{label:'Histórico',build(d){const b=d.base;return{intro:'Wayback permite reconstruir contenido y relaciones históricas.',groups:[{title:'Wayback Machine',items:[mkTool('Calendario HTTPS',`https://web.archive.org/web/*/https://${encodeURIComponent(b)}/*`,'archivo'),mkTool('Calendario HTTP',`https://web.archive.org/web/*/http://${encodeURIComponent(b)}/*`,'archivo'),mkTool('CDX manual',`https://web.archive.org/cdx/search/cdx?url=${encodeURIComponent(b)}/*&output=text&fl=timestamp,original,statuscode,mimetype&filter=statuscode:200&collapse=urlkey&limit=500`,'archivo')]},{title:'Menciones del histórico',items:[mkQuery('Wayback',`"${b}" "Wayback Machine"`,'dork'),mkQuery('Archive',`"${b}" archive`,'dork')]}]}}},
+ urls:{label:'URL Discovery',build(d){const b=d.base,paths=['login','admin','api','docs','upload','download','redirect','auth','signin','account'];return{groups:[{title:'Fuentes de URLs',items:[mkTool('urlscan.io',`https://urlscan.io/search/#domain%3A${encodeURIComponent(b)}`,'archivo'),mkTool('VirusTotal relaciones',`https://www.virustotal.com/gui/domain/${encodeURIComponent(b)}/relations`,'threat intel',{style:'warn'}),mkTool('AlienVault OTX',`https://otx.alienvault.com/indicator/domain/${encodeURIComponent(b)}`,'threat intel',{style:'warn'}),mkTool('Wayback',`https://web.archive.org/web/*/https://${encodeURIComponent(b)}/*`,'archivo')]},{title:'Dorks de rutas',items:paths.map(p=>mkQuery(`inurl:${p}`,`site:${d.full} inurl:${p}`,'dork'))}]}}},
+ technology:{label:'Tecnologías',build(d){const b=d.base,tech=['WordPress','Shopify','Cloudflare','AWS','Amazon Web Services','Azure','Google Cloud'];return{groups:[{title:'Identificación de tecnologías',items:[mkTool('BuiltWith',`https://builtwith.com/${encodeURIComponent(b)}`,'tecnología'),assisted('Wappalyzer Lookup','https://www.wappalyzer.com/lookup/',`https://${b}`,'tecnología','La interfaz pública actual no ofrece un deep-link estable sin API'),assisted('WhatRuns','https://www.whatruns.com/',b,'tecnología'),mkTool('Netcraft Site Report',`https://sitereport.netcraft.com/?url=${encodeURIComponent('https://'+b)}`,'tecnología'),mkTool('urlscan.io',`https://urlscan.io/search/#domain%3A${encodeURIComponent(b)}`,'tecnología')]},{title:'Dorks de tecnología',items:tech.map(t=>mkQuery(t,`"${b}" "${t}"`,'dork'))}]}}},
+ infrastructure:{label:'IP / Hosting / ASN',build(d){const b=d.base;return{groups:[{title:'Fuentes de infraestructura',items:[mkTool('Shodan',`https://www.shodan.io/search?query=${encodeURIComponent('hostname:'+b)}`,'infra'),mkTool('Censys',`https://search.censys.io/search?resource=hosts&q=${encodeURIComponent(b)}`,'infra'),mkTool('Netcraft',`https://sitereport.netcraft.com/?url=${encodeURIComponent('https://'+b)}`,'infra'),mkTool('ViewDNS IP History',`https://viewdns.info/iphistory/?domain=${encodeURIComponent(b)}`,'infra'),mkTool('DNSlytics',`https://dnslytics.com/domain/${encodeURIComponent(b)}`,'infra'),mkTool('SecurityTrails',`https://securitytrails.com/domain/${encodeURIComponent(b)}/dns`,'infra'),assisted('HackerTarget',`https://hackertarget.com/find-dns-host-records/`,b,'infra'),mkTool('urlscan.io',`https://urlscan.io/search/#domain%3A${encodeURIComponent(b)}`,'infra')]},{title:'Dorks de infraestructura',items:['IP','hosting','ASN','server','nameserver','Cloudflare'].map(t=>mkQuery(t,`"${b}" ${t}`,'dork'))}]}}},
+ related:{label:'Dominios relacionados',build(d){const b=d.base,n=d.rootName.replace(/[-_]/g,' ').trim();return{groups:[{title:'Identidad de organización',items:['company','powered by','copyright','privacy policy','terms','address'].map(t=>mkQuery(t,`"${b}" "${t}"`,'dork'))},{title:'Nombre raíz',items:[mkQuery('Nombre (Google)',`"${n}"`,'buscador'),mkQuery('Nombre excluyendo dominio',`"${n}" -"${b}"`,'dork'),mkQuery('Nombre en Bing',`"${n}"`,'buscador',ENGINES.bing)]}]}}},
+ typosquat:{label:'Dominios similares',build(d){return{warn:'Hipótesis de investigación: no implica existencia, registro ni relación. No se realizan consultas DNS.',variants:generateVariants(d.base)}}},
+ threatintel:{label:'Threat Intelligence',build(d){const b=d.base;return{groups:[{title:'Reputación / IOC',items:[mkTool('VirusTotal',`https://www.virustotal.com/gui/domain/${encodeURIComponent(b)}`,'threat intel',{style:'warn'}),mkTool('AlienVault OTX',`https://otx.alienvault.com/indicator/domain/${encodeURIComponent(b)}`,'threat intel',{style:'warn'}),mkTool('urlscan.io',`https://urlscan.io/search/#domain%3A${encodeURIComponent(b)}`,'threat intel',{style:'warn'}),mkTool('Cisco Talos',`https://talosintelligence.com/reputation_center/lookup?search=${encodeURIComponent(b)}`,'threat intel',{style:'warn'}),mkTool('Spamhaus',`https://check.spamhaus.org/results?query=${encodeURIComponent(b)}`,'threat intel',{style:'warn'}),mkTool('Google Safe Browsing',`https://transparencyreport.google.com/safe-browsing/search?url=${encodeURIComponent(b)}`,'threat intel',{style:'warn'}),mkTool('URLhaus',`https://urlhaus.abuse.ch/browse.php?search=${encodeURIComponent(b)}`,'threat intel',{style:'warn'}),assisted('ThreatFox','https://threatfox.abuse.ch/browse/',b,'threat intel','Búsqueda asistida: copia el dominio')]},{title:'Dorks de reputación',items:['malware','phishing','scam','fraud','spam','IOC','"indicator of compromise"','ransomware','VirusTotal','urlscan'].map(t=>mkQuery(t,`"${b}" ${t}`,'dork'))}]}}},
+ github:{label:'GitHub',build(d){const b=d.base;return{intro:'Código, documentación y referencias públicas. Algunas búsquedas de código pueden exigir sesión.',groups:[{title:'Vía Google',items:[mkQuery('site:github.com dominio',`site:github.com "${b}"`,'código'),mkQuery('site:github.com correo',`site:github.com "@${b}"`,'código'),mkQuery('site:github.com https',`site:github.com "https://${b}"`,'código')]},{title:'GitHub nativo',items:[mkQuery('Repositorios',b,'código',ENGINES.github,'direct'),mkQuery('Código',b,'código',ENGINES.githubcode,'direct'),mkQuery('Correo',`@${b}`,'código',ENGINES.githubcode,'direct')]}]}}},
+ social:{label:'Redes sociales',build(d){const b=d.base,sites=['linkedin.com','x.com','facebook.com','instagram.com','threads.net','reddit.com','youtube.com','t.me'];return{groups:[{title:'Menciones por plataforma',items:sites.map(x=>mkQuery(`site:${x}`,`site:${x} "${b}"`,'social'))},{title:'Genérica',items:[mkQuery('Social genérica',`"${b}" social`,'social')]}]}}},
+ press:{label:'Prensa y foros',build(d){const b=d.base;return{groups:[{title:'Menciones',items:['noticias','news','fraude','scam','foro','forum','reddit'].map(t=>mkQuery(t,`"${b}" ${t}`,'dork'))},{title:'Buscadores',items:[mkQuery('Google',`"${b}"`,'buscador'),mkQuery('Google News',`"${b}"`,'buscador',ENGINES.gnews),mkQuery('Bing',`"${b}"`,'buscador',ENGINES.bing),mkQuery('DuckDuckGo',`"${b}"`,'buscador',ENGINES.ddg)]}]}}},
+ company:{label:'Empresa / Identidad',build(d){const b=d.base;return{intro:'Consultas orientadas a vincular el dominio con una entidad o actividad económica.',groups:[{title:'Identidad corporativa',items:['empresa','company','CIF','VAT','address','teléfono','phone','contacto','CEO','director','LinkedIn','empleados'].map(t=>mkQuery(t,`"${b}" ${t}`,'dork'))}]}}},
+ pivots:{label:'Mapa de pivotes',pivots:true,build(){return{}}}
+};
+const CAT_ORDER=['overview','pivots','technical','ownership_history','whois','subdomains','dorks','documents','emails','urls','related','typosquat','threatintel','github','social','press','company'];
+Object.assign(CATS,EXTRA_CATS);
+const IP_CAT_ORDER=['ip_map','ip_ident','ip_privacy','ip_registry','ip_routing','ip_exposure','ip_reverse','ip_reputation','ip_history','ip_search'];
+const URL_CAT_ORDER=['url_map','url_local','url_reputation','url_observation','url_history','url_host','url_params','url_search'];
+function currentCatOrder(t=state.domain){return !t?CAT_ORDER:t.type==='IP'?IP_CAT_ORDER:t.type==='URL'?URL_CAT_ORDER:CAT_ORDER;}
+
+function limitByDepth(items){return items.slice(0,DEPTH_LIMITS[state.depth])}
+function matchesFilter(item){if(!state.filter)return true;const f=state.filter.toLowerCase();return [item.name,item.query,item.tag,item.desc].some(v=>safeText(v).toLowerCase().includes(f))}
+function keyFor(cat,item){return `${cat}|${item.name}|${item.query}`}
+function totalQueryCount(d){let c=0;currentCatOrder(d).forEach(id=>{const b=CATS[id].build(d);if(b.groups)b.groups.forEach(g=>c+=(g.items||[]).length);if(b.variants)c+=b.variants.length});return c}
+
+function autoSeedTargetGraph(t){
+  if(!t)return;const k=t.full;state.findings[k]=state.findings[k]||[];
+  const add=(type,value,relation,sourceId=rootNodeId())=>{if(!value)return null;let f=state.findings[k].find(x=>x.type===type&&String(x.value).toLowerCase()===String(value).toLowerCase());if(f)return f.id;f={id:'f_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,7),type,value,sourceId,relation,ts:Date.now(),captured:true,automatic:true};state.findings[k].push(f);return f.id};
+  if(t.type==='URL'){
+    const h=t.url.hostname;if(t.hostIsIP){add('IP',h,'HOST_DE_URL')}else{const htype=t.domain&&h===t.domain.base?'DOMAIN':'SUBDOMINIO';const hid=add(htype,h,'HOST_DE_URL');if(t.domain&&h!==t.domain.base)add('DOMAIN',t.domain.base,'PERTENECE_DOMINIO',hid)}
+    t.url.params.forEach(([name,val])=>{const dv=decodeURIComponentSafe(val);if(/^https?:\/\//i.test(dv)){const rel=/redirect|redir|return|next|continue|url|target|dest/i.test(name)?'REDIRIGE_A':'CONTIENE_URL';add('URL',dv,rel)}})
+  }
+  saveJSON('rd_findings',state.findings)
+}
+function analyze(){
+  const d=detectTarget(domainInput.value);
+  if(!d){inputError.textContent='Indicador no válido. Introduce un dominio, una IPv4/IPv6 o una URL HTTP/HTTPS.';inputError.hidden=false;return}
+  inputError.hidden=true;state.domain=d;state.selected.clear();emptyState.hidden=true;resultsWrap.hidden=false;
+  $('#btnExport').disabled=false;$('#btnCopyAll').disabled=false;
+  const prefix=d.type==='DOMAIN'?'DM':d.type==='IP'?'IP':'URL';const seed=safeFilename(d).replace(/[^a-z0-9]/gi,'').slice(0,8).toUpperCase();const caseId=`RW-${prefix}-${seed}-${Date.now().toString(36).slice(-4).toUpperCase()}`;$('#caseIdTop').textContent=caseId;
+  $('#indicatorTypeBar').hidden=false;$('#indicatorTypePill').textContent=d.type;$('#indicatorTypePill').className='indicator-pill '+d.type;$('#indicatorCanonical').textContent=d.full;$('#indicatorHint').textContent=d.type==='URL'?'Análisis estructural local + pivotes del host':d.type==='IP'?`${d.version} · ${d.scope}`:'Dominio / infraestructura web';
+  addToLocalHistory(d);autoSeedTargetGraph(d);renderStats();renderCategories();loadWorkspace();updateSelCount();updateDorkPreview();
+}
+function renderStats(){
+  const d=state.domain;statsRow.textContent='';let rows=[];
+  if(d.type==='DOMAIN')rows=[['Tipo','DOMAIN'],['Dominio',d.full],['Dominio base',d.base],['Subdominio',d.sub||'—'],['TLD',d.tld]];
+  else if(d.type==='IP')rows=[['Tipo','IP'],['Dirección',d.full],['Versión',d.version],['Ámbito',d.scope]];
+  else rows=[['Tipo','URL'],['Host',d.url.hostname],['Dominio base',d.domain?.base||'—'],['Puerto',d.url.port],['Path',d.url.pathname||'/']];
+  rows.forEach(([label,val])=>{const el=document.createElement('div');el.className='stat-box';const sp=document.createElement('span');sp.textContent=label;const b=document.createElement('b');b.textContent=val;if(val!=='—'){const bt=document.createElement('button');bt.className='cpy';bt.title='Copiar';bt.textContent=' ⧉';bt.onclick=()=>copyText(val);b.appendChild(bt)}el.append(sp,b);statsRow.appendChild(el)});const c=document.createElement('div');c.className='stat-box accent';c.innerHTML=`<span>Consultas generadas</span><b>${totalQueryCount(d)}</b>`;statsRow.appendChild(c)
+}
+
+function renderCategories(){
+  categoriesEl.textContent='';let n=1;
+  currentCatOrder().forEach(id=>{const cfg=CATS[id],built=cfg.build(state.domain),det=document.createElement('details');det.className='category';det.dataset.cat=id;
+    const sum=document.createElement('summary');let count='';if(built.groups)count=built.groups.reduce((a,g)=>a+limitByDepth(g.items).filter(matchesFilter).length,0);if(built.variants)count=built.variants.filter(v=>!state.filter||v.toLowerCase().includes(state.filter.toLowerCase())).length;if(cfg.pivots)count='';
+    const left=document.createElement('span');left.textContent=`${String(n++).padStart(2,'0')} · ${cfg.label}`;sum.appendChild(left);if(count!==''){const ce=document.createElement('span');ce.className='count';ce.textContent=count;sum.appendChild(ce)}det.appendChild(sum);
+    if(cfg.pivots){renderPivotBody(det);categoriesEl.appendChild(det);return}
+    if(cfg.urlinfo){renderURLLocalBody(det,state.domain);categoriesEl.appendChild(det);return}
+    if(cfg.localip){renderIPLocalBody(det,state.domain)}
+    if(built.intro){const x=document.createElement('div');x.className='cat-intro';x.textContent=built.intro;det.appendChild(x)}if(built.warn){const x=document.createElement('div');x.className='cat-warn';x.textContent=built.warn;det.appendChild(x)}
+    if(built.variants){const chips=document.createElement('div');chips.className='chips-wrap';built.variants.filter(v=>!state.filter||v.toLowerCase().includes(state.filter.toLowerCase())).forEach(v=>{const chip=document.createElement('span');chip.className='chip';chip.append(document.createTextNode(v+' '));const bt=document.createElement('button');bt.textContent='🔍';bt.title='Buscar en Google';bt.onclick=()=>openExternal(ENGINES.google(`"${v}"`));chip.appendChild(bt);chips.appendChild(chip)});det.appendChild(chips)}
+    if(built.groups)built.groups.forEach(g=>{const items=limitByDepth(g.items||[]).filter(matchesFilter);if(!items.length)return;const lab=document.createElement('div');lab.className='group-label';lab.textContent=g.title;det.appendChild(lab);const grid=document.createElement('div');grid.className='btn-grid';items.forEach(item=>grid.appendChild(renderPlatCell(id,item)));det.appendChild(grid)});
+    categoriesEl.appendChild(det)
+  });
+  if(state.filter)categoriesEl.querySelectorAll('details.category').forEach(d=>d.open=true)
+}
+
+function renderPlatCell(cat,item){
+  const node=$('#tplPlatCell').content.cloneNode(true),key=keyFor(cat,item),link=node.querySelector('.plat-btn'),mode=node.querySelector('.mode-badge');
+  link.classList.add(item.style||'search');link.href=item.url;link.querySelector('.pname').textContent=item.name;link.querySelector('.tag').textContent=item.tag||'';mode.textContent=item.mode==='manual'?'asistida':item.mode==='search'?'búsqueda':'directa';
+  if(item.desc)link.title=item.desc;
+  link.addEventListener('click',()=>{if(item.mode==='manual'&&item.copyValue){copyText(item.copyValue);status(`${item.name}: dato copiado · pega en la fuente`)}markOpened(key)});
+  const cb=node.querySelector('.qsel');cb.checked=state.selected.has(key);cb.onchange=()=>{cb.checked?state.selected.add(key):state.selected.delete(key);updateSelCount()};
+  node.querySelector('.copy-mini').onclick=()=>copyText(item.copyValue||item.query);
+  const fav=node.querySelector('.fav-mini'),isFav=state.favorites.some(f=>f.key===key&&f.domain===state.domain.full);fav.classList.toggle('active',isFav);fav.textContent=isFav?'★':'☆';fav.onclick=()=>toggleFavorite(cat,item,fav);
+  return node;
+}
+function markOpened(key){const d=state.domain?.full;if(!d)return;state.opened[d]=state.opened[d]||{};state.opened[d][key]=Date.now();saveJSON('rd_opened',state.opened);renderWorkflow()}
+function toggleFavorite(cat,item,btn){const key=keyFor(cat,item),domain=state.domain.full,i=state.favorites.findIndex(f=>f.key===key&&f.domain===domain);if(i>=0){state.favorites.splice(i,1);btn.classList.remove('active');btn.textContent='☆';status('Eliminado de favoritos')}else{state.favorites.unshift({key,domain,name:item.name,query:item.query,url:item.url,tag:item.tag});btn.classList.add('active');btn.textContent='★';status('Añadido a favoritos ★')}saveJSON('rd_favorites',state.favorites)}
+
+
+function renderURLLocalBody(details,t){
+  const u=t.url,box=document.createElement('div');box.className='local-analysis';
+  const facts=[['Protocolo',u.protocol],['Hostname',u.hostname],['Dominio base',t.domain?.base||'—'],['Puerto',u.port],['Path',u.pathname||'/'],['Query',u.search||'—'],['Fragmento',u.hash||'—'],['Parámetros',String(u.params.length)]];
+  const grid=document.createElement('div');grid.className='local-analysis-grid';facts.forEach(([k,v])=>{const c=document.createElement('div');c.className='local-kv';const s=document.createElement('span');s.textContent=k;const b=document.createElement('b');b.textContent=v;c.append(s,b);grid.appendChild(c)});box.appendChild(grid);
+  const flags=urlLocalFacts(t);if(flags.length){const f=document.createElement('div');f.className='local-flags';flags.forEach(([x,cl])=>{const z=document.createElement('span');z.className='local-flag '+cl;z.textContent=x;f.appendChild(z)});box.appendChild(f)}
+  if(u.params.length){const p=document.createElement('div');p.className='capture-preview';p.style.marginTop='10px';u.params.forEach(([k,v])=>{const r=document.createElement('div');r.className='capture-item';const a=document.createElement('span');a.className='ctype';a.textContent=k;const b=document.createElement('span');b.className='cval';b.style.gridColumn='2/4';b.textContent=decodeURIComponentSafe(v);r.append(a,b);p.appendChild(r)});box.appendChild(p)}
+  details.appendChild(box)
+}
+function renderIPLocalBody(details,t){
+  const box=document.createElement('div');box.className='local-analysis';const grid=document.createElement('div');grid.className='local-analysis-grid';[['Versión',t.version],['Ámbito',t.scope],['Indicador',t.full]].forEach(([k,v])=>{const c=document.createElement('div');c.className='local-kv';c.innerHTML=`<span>${escapeHTML(k)}</span><b>${escapeHTML(v)}</b>`;grid.appendChild(c)});box.appendChild(grid);details.appendChild(box)
+}
+
+function renderPivotBody(details){
+  const type=state.domain?.type||'DOMAIN';const intro=document.createElement('div');intro.className='pivot-map-intro';
+  const maps={
+    DOMAIN:{intro:'¿Qué puedo obtener de un dominio? Utiliza cada hallazgo como nuevo punto de partida.',stages:[['1 · Identidad técnica',[['DOMAIN → DNS → IP','Infraestructura visible y resoluciones actuales.','IP / HOST'],['DOMAIN → NS / MX','DNS autoritativo y correo.','INFRAESTRUCTURA'],['DOMAIN → WHOIS / RDAP','Registrar, fechas y datos públicos.','REGISTRO'],['DOMAIN → CERTIFICADOS','CT y nombres históricos.','SUBDOMINIOS']]],['2 · Expandir',[['IP → ASN / NETBLOCK','Operador, prefijos y routing.','RED'],['IP → DOMINIOS','Co-hosting como hipótesis técnica.','RELACIONES'],['NS/MX → DOMINIOS','Infraestructura compartida; verificar.','PIVOTE'],['SUBDOMINIO → URL/HISTÓRICO','Contenido y rutas observadas.','CONTEXTO']]]]},
+    IP:{intro:'¿Qué puedo obtener de una IP? Separa siempre asignación de red, observación de servicios y atribución.',stages:[['1 · Contextualizar la IP',[['IP → RDAP / WHOIS','Asignación del recurso y netblock.','REGISTRO'],['IP → ASN / BGP','Sistema autónomo, prefijos y rutas.','ROUTING'],['IP → PTR','Nombre inverso cuando existe.','DNS'],['IP → SHODAN / CENSYS','Servicios observados por terceros.','EXPOSURE']]],['2 · Expandir',[['IP → DOMINIOS','Reverse IP/passive DNS. No prueba titularidad.','HIPÓTESIS'],['IP → REPUTACIÓN','VT, AbuseIPDB, OTX, Spamhaus.','THREAT INTEL'],['ASN → PREFIJOS','Ampliar infraestructura asociada al operador.','RED'],['DOMINIO → RASTRO-WEB','Continuar desde un hostname hallado.','PIVOTE']]]]},
+    URL:{intro:'¿Qué puedo obtener de una URL? Primero descomponer localmente, después investigar host, reputación, observaciones e histórico.',stages:[['1 · Descomponer sin visitar',[['URL → HOST','Hostname/IP contenido en la URL.','HOST'],['URL → PATH / PARÁMETROS','Rutas, IDs y valores codificados.','CONTEXTO'],['URL → REDIRECCIÓN','URLs anidadas en parámetros como redirect/next/url.','PIVOTE'],['URL → PUNYCODE / PUERTO','Indicadores estructurales para revisión.','ANÁLISIS LOCAL']]],['2 · Expandir',[['HOST → DOMAIN / IP','Pasar a infraestructura del host.','INFRAESTRUCTURA'],['URL → URLSCAN / VT','Observaciones o reputación externa.','OSINT'],['URL → WAYBACK','Versiones históricas.','HISTÓRICO'],['DOMAIN/IP → GRAFO','Mantener todas las relaciones en el mismo expediente.','EVIDENCIA']]]]} };
+  const m=maps[type];intro.innerHTML=`<b>${m.intro.split('?')[0]}?</b><br>${m.intro.split('?').slice(1).join('?').trim()}`;details.appendChild(intro);
+  m.stages.forEach(([title,routes])=>{const box=document.createElement('div');box.className='pivot-stage';const h=document.createElement('div');h.className='pivot-stage-title';h.textContent=title;box.appendChild(h);const grid=document.createElement('div');grid.className='pivot-stage-grid';routes.forEach(([route,why,result])=>{const c=document.createElement('div');c.className='pivot-route';c.innerHTML=`<div class="route">${escapeHTML(route)}</div><div class="why">${escapeHTML(why)}</div><span class="result">${escapeHTML(result)}</span>`;grid.appendChild(c)});box.appendChild(grid);details.appendChild(box)})
+}
+
+function updateSelCount(){selCountEl.textContent=state.selected.size;$('#btnOpenSelected').disabled=!state.selected.size}
+function allCurrentItems(){const list=[];currentCatOrder().forEach(cid=>{const b=CATS[cid].build(state.domain);if(b.groups)b.groups.forEach(g=>g.items.forEach(item=>list.push({cid,item})))});return list}
+$('#btnOpenSelected').onclick=()=>{const map=new Map(allCurrentItems().map(({cid,item})=>[keyFor(cid,item),item]));const items=[...state.selected].map(k=>map.get(k)).filter(Boolean);if(items.length>8&&!confirm(`Vas a abrir ${items.length} pestañas. ¿Continuar?`))return;items.forEach(i=>{if(i.mode==='manual'&&i.copyValue)copyText(i.copyValue);openExternal(i.url)})};
+$('#btnCopyAll').onclick=()=>{if(!state.domain)return;const txt=allCurrentItems().map(({item})=>`${item.name}\t${item.query}`).join('\n');copyText(txt)};
+
+function addToLocalHistory(d){const e={domain:d.full,base:d.base,type:d.type,ts:Date.now(),queries:totalQueryCount(d)};state.history=state.history.filter(h=>!(h.domain===d.full&&(h.type||'DOMAIN')===d.type));state.history.unshift(e);state.history=state.history.slice(0,50);saveJSON('rd_history',state.history)}
+function openOverlay(title,builder){const ov=document.createElement('div');ov.style.cssText='position:fixed;inset:0;background:rgba(20,15,10,.55);z-index:400;display:flex;justify-content:flex-end';const panel=document.createElement('div');panel.style.cssText='width:min(480px,94vw);height:100%;background:var(--paper);border-left:3px solid var(--ink);padding:20px;overflow-y:auto;font-family:"Courier Prime",monospace';const hdr=document.createElement('div');hdr.style.cssText='display:flex;justify-content:space-between;align-items:center;margin-bottom:16px';const h=document.createElement('h3');h.className='title-font';h.style.margin='0';h.textContent=title;const close=document.createElement('button');close.className='btn-stamp ghost small';close.textContent='Cerrar';hdr.append(h,close);const body=document.createElement('div');panel.append(hdr,body);ov.appendChild(panel);document.body.appendChild(ov);close.onclick=()=>ov.remove();ov.onclick=e=>{if(e.target===ov)ov.remove()};builder(body,ov)}
+
+$('#btnHistoryPanel').onclick=()=>openOverlay('Historial local',(body,ov)=>{const draw=()=>{body.textContent='';if(!state.history.length){body.innerHTML='<div class="empty-msg">Sin investigaciones registradas.</div>';return}state.history.forEach(h=>{const row=document.createElement('div');row.className='pivot-result';const txt=document.createElement('span');txt.textContent=`${h.type||'DOMAIN'} · ${h.domain} · ${new Date(h.ts).toLocaleString()}`;const acts=document.createElement('span');const op=document.createElement('button');op.className='del-btn';op.textContent='Abrir';op.onclick=()=>{domainInput.value=h.domain;ov.remove();analyze()};const del=document.createElement('button');del.className='del-btn';del.textContent='✕';del.style.marginLeft='4px';del.onclick=()=>{state.history=state.history.filter(x=>x!==h);saveJSON('rd_history',state.history);draw()};acts.append(op,del);row.append(txt,acts);body.appendChild(row)});const clear=document.createElement('button');clear.className='btn-stamp ghost small';clear.style.marginTop='12px';clear.textContent='Limpiar historial';clear.onclick=()=>{if(confirm('¿Borrar todo el historial local?')){state.history=[];saveJSON('rd_history',[]);draw()}};body.appendChild(clear)};draw()});
+$('#btnFavPanel').onclick=()=>openOverlay('Favoritos',(body)=>{const draw=()=>{body.textContent='';if(!state.favorites.length){body.innerHTML='<div class="empty-msg">Sin favoritos guardados.</div>';return}state.favorites.forEach(f=>{const row=document.createElement('div');row.className='pivot-result';const txt=document.createElement('span');txt.textContent=`${f.name} · ${f.domain}`;const acts=document.createElement('span');const op=document.createElement('button');op.className='del-btn';op.textContent='Abrir';op.onclick=()=>openExternal(f.url);const del=document.createElement('button');del.className='del-btn';del.textContent='✕';del.style.marginLeft='4px';del.onclick=()=>{state.favorites=state.favorites.filter(x=>x!==f);saveJSON('rd_favorites',state.favorites);draw();if(state.domain)renderCategories()};acts.append(op,del);row.append(txt,acts);body.appendChild(row)})};draw()});
+
+
+let captureCandidates=[];
+function inferCaptureSource(text){
+  const s=String(text||'');
+  if(/whoxy|autowhois|Registrant Name|Whois History/i.test(s))return 'WHOXY';
+  if(/ipcost|ipme|VPN\s*\/\s*Proxy/i.test(s))return 'IPCOST';
+  if(/ipinfo|privacy.*vpn|bogon/i.test(s))return 'IPINFO';
+  if(/RIPEstat|route-status|announced space|RIR/i.test(s))return 'RIPESTAT';
+  if(/securitytrails|historical dns/i.test(s))return 'SECURITYTRAILS';
+  if(/censys|services?\s*:/i.test(s))return 'CENSYS';
+  if(/urlscan|page\.domain|task\.url/i.test(s))return 'URLSCAN';
+  if(/virustotal|last_analysis_stats/i.test(s))return 'VIRUSTOTAL';
+  return 'DNS';
+}
+function captureMeta(text){
+  const selected=$('#captureSource')?.value||'AUTO',source=selected==='AUTO'?inferCaptureSource(text):selected;
+  const label={WHOXY:'Whoxy',IPCOST:'IPcost / IPme',IPINFO:'IPinfo',RIPESTAT:'RIPEstat',SECURITYTRAILS:'SecurityTrails',CENSYS:'Censys',URLSCAN:'urlscan',VIRUSTOTAL:'VirusTotal',DNS:'DNS / genérico',MANUAL:'Otra / manual'}[source]||source;
+  let historicalDate=($('#captureHistoricalDate')?.value||'').trim();
+  if(!historicalDate&&source==='WHOXY'){
+    const m=String(text).match(/(?:Query Time|Snapshot|Record Date|WHOIS Date|Updated Date|Updated)\s*[:=\-]\s*([^\n\r]{4,45})/i);
+    if(m)historicalDate=m[1].trim();
+  }
+  let status=$('#captureStatus')?.value||'OBSERVADO';
+  if(source==='WHOXY'&&/history|snapshot|historical|query time/i.test(text)&&status==='OBSERVADO')status='HISTORICO';
+  return {sourceKey:source,sourceName:label,evidenceStatus:status,historicalDate,observedAt:Date.now()}
+}
+function detectCaptureCandidates(text){
+  const out=[],seen=new Set(),base=state.domain?.type==='DOMAIN'?state.domain.base:(state.domain?.type==='URL'?state.domain.domain?.base:'')||'',meta=captureMeta(text);
+  const add=(type,value,relation,sourceId,extra={})=>{value=String(value||'').trim().replace(/^[\s"'`]+|[\s"'`,;]+$/g,'');const key=type+'|'+value.toLowerCase()+'|'+(relation||'');if(!value||seen.has(key))return;seen.add(key);out.push({type,value,relation,sourceId:sourceId||rootNodeId(),...meta,...extra})};
+  const ipv4=/\b(?:(?:25[0-5]|2[0-4]\d|1?\d?\d)\.){3}(?:25[0-5]|2[0-4]\d|1?\d?\d)\b/g;
+  (text.match(ipv4)||[]).forEach(v=>add('IP',v,'RESUELVE_A'));
+  (text.match(/\bAS\d{1,10}\b/gi)||[]).forEach(v=>add('ASN',v.toUpperCase(),'PERTENECE_ASN'));
+  (text.match(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,63}\b/gi)||[]).forEach(v=>add('EMAIL',v,meta.sourceKey==='WHOXY'?'EMAIL_HISTORICO':'EXPONE_EMAIL',null,{historical:meta.sourceKey==='WHOXY'}));
+  (text.match(/https?:\/\/[^\s<>"']+/gi)||[]).forEach(v=>add('URL',v,'CONTIENE_URL'));
+  if(base){const escaped=base.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');const rx=new RegExp('(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+'+escaped,'gi');(text.match(rx)||[]).forEach(v=>{v=v.toLowerCase();if(v!==state.domain?.full&&v!==base)add('SUBDOMINIO',v,'TIENE_SUBDOMINIO')})}
+  text.split(/\r?\n/).forEach(line=>{
+    let m=line.match(/^\s*(?:A)\s*[:=\t ]+\s*((?:\d{1,3}\.){3}\d{1,3})\b/i);if(m&&validIPv4(m[1]))add('IP',m[1],'RESUELVE_A');
+    m=line.match(/^\s*(?:AAAA)\s*[:=\t ]+\s*([0-9a-f:]+)\b/i);if(m&&validIPv6(m[1]))add('IP',m[1],'RESUELVE_AAAA');
+    m=line.match(/^\s*(?:MX)\s*[:=\t ]+(?:\d+\s+)?([a-z0-9.-]+\.[a-z]{2,})\.?\s*$/i);if(m)add('MX',m[1].toLowerCase(),'USA_MX');
+    m=line.match(/^\s*(?:NS|Name\s*Server)\s*[:=\t ]+\s*([a-z0-9.-]+\.[a-z]{2,})\.?\s*$/i);if(m)add('NS',m[1].toLowerCase(),meta.sourceKey==='WHOXY'?'NS_HISTORICO':'USA_NS',null,{historical:meta.sourceKey==='WHOXY'});
+    m=line.match(/^\s*(?:CNAME)\s*[:=\t ]+\s*([a-z0-9.-]+\.[a-z]{2,})\.?\s*$/i);if(m)add('SUBDOMINIO',m[1].toLowerCase(),'USA_CNAME');
+    if(meta.sourceKey==='WHOXY'){
+      m=line.match(/^\s*(?:Registrant\s*)?(?:Name|Owner|Registrant)\s*[:=\-]\s*(.+)$/i);if(m&&!/privacy|redacted|protected|withheld/i.test(m[1]))add('TITULAR',m[1].trim(),'ANTIGUO_TITULAR',null,{historical:true,evidenceStatus:'HISTORICO'});
+      m=line.match(/^\s*(?:Registrant\s*)?(?:Organization|Organisation|Company|Org)\s*[:=\-]\s*(.+)$/i);if(m&&!/privacy|redacted|protected|withheld/i.test(m[1]))add('EMPRESA',m[1].trim(),'ANTIGUA_EMPRESA',null,{historical:true,evidenceStatus:'HISTORICO'});
+      m=line.match(/^\s*(?:Country|Registrant\s*Country)\s*[:=\-]\s*(.+)$/i);if(m)add('PAIS',m[1].trim(),'RELACIONADO',null,{historical:true,evidenceStatus:'HISTORICO'});
+    }
+  });
+  if(['IPCOST','IPINFO'].includes(meta.sourceKey)||/(provider|isp|organization|company|vpn|proxy|tor|hosting|datacenter)/i.test(text)){
+    [/^(?:\s*)(?:Provider|ISP|Organization|Organisation|Company)\s*[:=\-]\s*(.+)$/gim,/^(?:\s*)Org(?:anization)?\s*[:=\-]\s*(.+)$/gim].forEach(rx=>{let m;while((m=rx.exec(text)))add('PROVEEDOR',m[1].trim(),'PROVEEDOR')});
+    const checks=[['VPN',/(?:VPN|is_vpn)\s*[:=\-]?\s*(?:true|yes|sí|detected|detectad[oa]|active)/i,'VPN_DETECTADA'],['PROXY',/(?:Proxy|is_proxy)\s*[:=\-]?\s*(?:true|yes|sí|detected|detectad[oa]|active)/i,'PROXY_DETECTADO'],['TOR',/(?:Tor|is_tor)\s*[:=\-]?\s*(?:true|yes|sí|detected|detectad[oa]|active)/i,'TOR_DETECTADO'],['HOSTING / DATACENTER',/(?:Hosting|Datacenter|Data Center|is_hosting)\s*[:=\-]?\s*(?:true|yes|sí|detected|detectad[oa])/i,'HOSTING_DATACENTER']];
+    checks.forEach(([label,rx,rel])=>{if(rx.test(text))add('PRIVACIDAD',label,rel)});
+  }
+  return out.slice(0,250);
+}
+function renderCapturePreview(){
+  const box=$('#capturePreview');box.textContent='';
+  const src=$('#captureSource')?.value==='AUTO'&&$('#captureText')?.value?inferCaptureSource($('#captureText').value):$('#captureSource')?.value;
+  $('#captureSummary').textContent=captureCandidates.length?`${captureCandidates.length} hallazgo(s) detectado(s) · parser ${src||'AUTO'}. Revisa antes de incorporar.`:'No se detectaron entidades compatibles.';
+  if(!captureCandidates.length){box.innerHTML='<div class="empty-msg">Sin hallazgos detectados.</div>';return}
+  captureCandidates.forEach((c,i)=>{const row=document.createElement('label');row.className='capture-item';const cb=document.createElement('input');cb.type='checkbox';cb.checked=true;cb.dataset.idx=i;const ty=document.createElement('span');ty.className='ctype';ty.textContent=c.type;const val=document.createElement('span');val.className='cval';val.textContent=c.value+(c.sourceName?` · ${c.sourceName}`:'')+(c.evidenceStatus?` · ${c.evidenceStatus}`:'');row.append(cb,ty,val);box.appendChild(row)})
+}
+$('#btnCaptureAnalyze').onclick=()=>{if(!state.domain)return;captureCandidates=detectCaptureCandidates($('#captureText').value);renderCapturePreview()};
+$('#captureText').addEventListener('paste',()=>setTimeout(()=>{if(!state.domain)return;captureCandidates=detectCaptureCandidates($('#captureText').value);renderCapturePreview();if($('#captureAuto').checked){let n=0;captureCandidates.forEach(c=>{if(addFindingToCase(c))n++});if(n){saveJSON('rd_findings',state.findings);refreshFindingControls();renderFindings();renderGraph(true);renderTimeline();renderWorkflow();renderInvestigatorSummary();status(`${n} hallazgo(s) detectados/contrastados y añadidos al expediente ✔`)}}},0));
+$('#btnCaptureClear').onclick=()=>{$('#captureText').value='';captureCandidates=[];renderCapturePreview()};
+function addFindingToCase(c){
+  const k=state.domain.full;state.findings[k]=state.findings[k]||[];
+  const arr=state.findings[k],dup=arr.find(x=>x.type===c.type&&String(x.value).toLowerCase()===String(c.value).toLowerCase());
+  const prov={name:c.sourceName||'Captura inteligente',observedAt:c.observedAt||Date.now(),historicalDate:c.historicalDate||'',status:c.evidenceStatus||'OBSERVADO'};
+  if(dup){
+    dup.sources=Array.isArray(dup.sources)?dup.sources:[];
+    if(!dup.sources.some(s=>s.name===prov.name&&String(s.historicalDate||'')===String(prov.historicalDate||'')))dup.sources.push(prov);
+    const independent=new Set(dup.sources.map(s=>s.name).filter(Boolean));
+    if(independent.size>=2)dup.evidenceStatus='CORROBORADO';
+    if(c.historicalDate&&!dup.historicalDate)dup.historicalDate=c.historicalDate;
+    dup.observedAt=Date.now();
+    return 'merged';
+  }
+  arr.push({id:'f_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,7),type:c.type,value:c.value,sourceId:c.sourceId||rootNodeId(),relation:c.relation||defaultRelation(c.type),ts:Date.now(),observedAt:c.observedAt||Date.now(),historicalDate:c.historicalDate||'',evidenceStatus:c.evidenceStatus||'OBSERVADO',sourceName:c.sourceName||'Captura inteligente',sources:[prov],important:false,captured:true,historical:!!c.historical});
+  return 'added';
+}
+$('#btnCaptureAdd').onclick=()=>{if(!state.domain)return;let n=0;$('#capturePreview').querySelectorAll('input[type=checkbox]:checked').forEach(cb=>{const c=captureCandidates[Number(cb.dataset.idx)];if(c&&addFindingToCase(c))n++});saveJSON('rd_findings',state.findings);refreshFindingControls();renderFindings();renderGraph(true);renderTimeline();renderWorkflow();renderInvestigatorSummary();status(n?`${n} hallazgo(s) añadidos automáticamente al grafo ✔`:'No había hallazgos nuevos para añadir')};
+
+const GRAPH_RELATIONS=["RESUELVE_A", "RESUELVE_AAAA", "TIENE_SUBDOMINIO", "USA_NS", "USA_MX", "EXPONE_EMAIL", "PERTENECE_ASN", "CONTIENE_URL", "ASOCIADO_A", "ALOJADO_EN", "PROVEEDOR", "REDIRIGE_A", "MENCIONA", "HOST_DE_URL", "PERTENECE_DOMINIO", "USA_CNAME", "PTR_A", "ANUNCIADO_POR", "EN_NETBLOCK", "VPN_DETECTADA", "PROXY_DETECTADO", "TOR_DETECTADO", "HOSTING_DATACENTER", "ANTIGUO_TITULAR", "EMAIL_HISTORICO", "ANTIGUA_EMPRESA", "NS_HISTORICO", "OBSERVADO_EN", "RELACIONADO"];
+function defaultRelation(type){
+  return ({IP:'RESUELVE_A',SUBDOMINIO:'TIENE_SUBDOMINIO',NS:'USA_NS',MX:'USA_MX',EMAIL:'EXPONE_EMAIL',ASN:'PERTENECE_ASN',URL:'CONTIENE_URL',EMPRESA:'ASOCIADO_A',PROVEEDOR:'PROVEEDOR',TITULAR:'ANTIGUO_TITULAR',PRIVACIDAD:'RELACIONADO',PAIS:'RELACIONADO',FECHA:'OBSERVADO_EN',DOMAIN:'RELACIONADO'}[type]||'RELACIONADO')
+}
+function rootNodeId(){return state.domain?'root:'+state.domain.full:'root'}
+function ensureFindingIds(){
+  if(!state.domain)return;const k=state.domain.full,arr=state.findings[k]||[];let changed=false;
+  arr.forEach((f,i)=>{
+    if(!f.id){f.id='f_'+Date.now().toString(36)+'_'+i+'_'+Math.random().toString(36).slice(2,6);changed=true}
+    if(!f.sourceId){f.sourceId=rootNodeId();changed=true}
+    if(!f.relation){f.relation=defaultRelation(f.type);changed=true}
+    if(!f.observedAt){f.observedAt=f.ts||Date.now();changed=true}
+    if(!f.evidenceStatus){f.evidenceStatus=f.historical?'HISTORICO':f.captured?'OBSERVADO':'MANUAL';changed=true}
+    if(!Array.isArray(f.sources)){f.sources=[{name:f.sourceName||'RASTRO / manual',observedAt:f.observedAt,historicalDate:f.historicalDate||'',status:f.evidenceStatus}];changed=true}
+    if(typeof f.important!=='boolean'){f.important=false;changed=true}
+  });
+  if(changed)saveJSON('rd_findings',state.findings)
+}
+function graphNodes(){if(!state.domain)return[];ensureFindingIds();return[{id:rootNodeId(),type:state.domain.type,value:state.domain.full,root:true},...(state.findings[state.domain.full]||[]).map(f=>({id:f.id,type:f.type,value:f.value,root:false}))]}
+function graphEdges(){if(!state.domain)return[];ensureFindingIds();const arr=state.findings[state.domain.full]||[];const primary=arr.map(f=>({id:'p_'+f.id,source:f.sourceId||rootNodeId(),target:f.id,label:f.relation||defaultRelation(f.type),primary:true}));return [...primary,...(state.graphLinks[state.domain.full]||[])];}
+function fillRelationSelect(sel,selected){sel.textContent='';GRAPH_RELATIONS.forEach(r=>{const o=document.createElement('option');o.value=r;o.textContent=r.replaceAll('_',' ');if(r===selected)o.selected=true;sel.appendChild(o)})}
+function refreshFindingControls(){if(!state.domain)return;ensureFindingIds();const src=$('#findingSource');src.textContent='';graphNodes().forEach(n=>{const o=document.createElement('option');o.value=n.id;o.textContent=(n.root?state.domain.type:n.type)+' · '+n.value;src.appendChild(o)});fillRelationSelect($('#findingRelation'),defaultRelation($('#findingType').value));}
+function loadWorkspace(){const k=state.domain.full;$('#notesArea').value=state.notes[k]||'';ensureFindingIds();refreshFindingControls();renderFindings();$('#pivotValue').value='';$('#pivotResults').textContent='';state.graphSelected=rootNodeId();state.graphZoom=1;state.graphPan={x:0,y:0};renderGraph();renderTimeline();renderWorkflow();renderInvestigatorSummary()}
+$('#btnSaveNotes').onclick=()=>{if(!state.domain)return;state.notes[state.domain.full]=$('#notesArea').value;saveJSON('rd_notes',state.notes);status('Notas guardadas localmente ✔')};
+$('#btnClearNotes').onclick=()=>{if(!state.domain)return;delete state.notes[state.domain.full];saveJSON('rd_notes',state.notes);$('#notesArea').value='';status('Notas borradas')};
+$('#notesArea').addEventListener('input',()=>{if(state.domain){state.notes[state.domain.full]=$('#notesArea').value;saveJSON('rd_notes',state.notes)}});
+$('#findingType').addEventListener('change',()=>fillRelationSelect($('#findingRelation'),defaultRelation($('#findingType').value)));
+$('#btnAddFinding').onclick=()=>{
+  if(!state.domain)return;const val=$('#findingValue').value.trim();if(!val)return;
+  const type=$('#findingType').value,sourceName=$('#findingEvidenceSource').value.trim()||'Entrada manual',evidenceStatus=$('#findingEvidenceStatus').value||'MANUAL';
+  const result=addFindingToCase({type,value:val,sourceId:$('#findingSource').value||rootNodeId(),relation:$('#findingRelation').value||defaultRelation(type),sourceName,evidenceStatus,observedAt:Date.now()});
+  saveJSON('rd_findings',state.findings);$('#findingValue').value='';refreshFindingControls();renderFindings();renderGraph();renderTimeline();renderWorkflow();renderInvestigatorSummary();status(result==='merged'?'Hallazgo existente: procedencia añadida / corroboración actualizada ✔':'Hallazgo añadido al grafo ✔')
+};
+function removeFinding(id){if(!state.domain)return;const k=state.domain.full,arr=state.findings[k]||[],f=arr.find(x=>x.id===id);if(!f)return;if(!confirm(`Eliminar ${f.type}: ${f.value} y sus relaciones del grafo?`))return;state.findings[k]=arr.filter(x=>x.id!==id).map(x=>x.sourceId===id?{...x,sourceId:rootNodeId()}:x);state.graphLinks[k]=(state.graphLinks[k]||[]).filter(e=>e.source!==id&&e.target!==id);if(state.graphPositions[k])delete state.graphPositions[k][id];saveJSON('rd_findings',state.findings);saveJSON('rd_graph_links',state.graphLinks);saveJSON('rd_graph_positions',state.graphPositions);if(state.graphSelected===id)state.graphSelected=rootNodeId();state.graphZoom=1;refreshFindingControls();renderFindings();renderGraph();renderTimeline();renderWorkflow();renderInvestigatorSummary()}
+function toggleImportant(id){
+  const arr=state.findings[state.domain.full]||[],f=arr.find(x=>x.id===id);if(!f)return;f.important=!f.important;saveJSON('rd_findings',state.findings);renderFindings();renderInvestigatorSummary()
+}
+function renderFindings(){
+  const box=$('#findingsList');box.textContent='';if(!state.domain)return;ensureFindingIds();const arr=state.findings[state.domain.full]||[];
+  if(!arr.length){box.innerHTML='<div class="empty-msg">Sin hallazgos todavía.</div>';return}
+  const nodeMap=new Map(graphNodes().map(n=>[n.id,n]));
+  arr.forEach(f=>{const row=document.createElement('div');row.className='finding-row v2';const ty=document.createElement('div');ty.className='finding-type';ty.textContent=f.type;
+    const wrap=document.createElement('div'),v=document.createElement('div');v.className='finding-value';const src=nodeMap.get(f.sourceId);v.textContent=f.value;v.title=`${f.relation||defaultRelation(f.type)} desde ${src?src.value:'indicador'} · clic para pivotar`;v.style.cursor='pointer';v.onclick=()=>{$('#pivotType').value=graphTypeForPivot(f.type);$('#pivotValue').value=f.value;state.graphSelected=f.id;generatePivot();renderGraph()};
+    const badges=document.createElement('div');badges.className='prov-badges';const sources=[...new Set((f.sources||[]).map(s=>s.name).filter(Boolean))];const statusBadge=document.createElement('span');statusBadge.className='prov-badge '+(f.evidenceStatus==='CORROBORADO'?'verified':f.evidenceStatus==='HISTORICO'?'historical':f.evidenceStatus==='INFERIDO'?'inferred':'');statusBadge.textContent=f.evidenceStatus||'MANUAL';badges.appendChild(statusBadge);
+    if(sources.length){const b=document.createElement('span');b.className='prov-badge';b.textContent=sources.length>1?`${sources.length} fuentes`:sources[0];badges.appendChild(b)}
+    if(f.historicalDate){const b=document.createElement('span');b.className='prov-badge historical';b.textContent=`hist. ${f.historicalDate}`;badges.appendChild(b)}
+    wrap.append(v,badges);
+    const star=document.createElement('button');star.className='finding-star '+(f.important?'on':'');star.title='Marcar como hallazgo relevante';star.textContent=f.important?'★':'☆';star.onclick=()=>toggleImportant(f.id);
+    const del=document.createElement('button');del.className='del-btn';del.textContent='✕';del.onclick=()=>removeFinding(f.id);row.append(ty,wrap,star,del);box.appendChild(row)
+  })
+}
+function graphTypeForPivot(type){return ['DOMAIN','IP','SUBDOMINIO','EMAIL','NS','MX','ASN','URL','EMPRESA'].includes(type)?type:'EMPRESA'}
+function graphNodeById(id){return graphNodes().find(n=>n.id===id)}
+function graphDepths(nodes,edges){const depth=new Map([[rootNodeId(),0]]);let changed=true,loops=0;while(changed&&loops++<nodes.length+3){changed=false;edges.forEach(e=>{if(depth.has(e.source)&&!depth.has(e.target)){depth.set(e.target,depth.get(e.source)+1);changed=true}})}nodes.forEach(n=>{if(!depth.has(n.id))depth.set(n.id,1)});return depth}
+function autoGraphPositions(nodes,edges,w=1200,h=760){const depth=graphDepths(nodes,edges),levels=new Map();nodes.forEach(n=>{const d=depth.get(n.id)||0;if(!levels.has(d))levels.set(d,[]);levels.get(d).push(n)});const maxD=Math.max(...levels.keys(),1),pos={};[...levels.entries()].sort((a,b)=>a[0]-b[0]).forEach(([d,list])=>{const x=110+(w-220)*(d/maxD);list.forEach((n,i)=>{const y=(h/(list.length+1))*(i+1);pos[n.id]={x,y}})});return pos}
+function graphPosStore(){const k=state.domain.full;state.graphPositions[k]=state.graphPositions[k]||{};return state.graphPositions[k]}
+function truncateGraphValue(v,n=28){v=String(v);return v.length>n?v.slice(0,n-1)+'…':v}
+state.graphZoom=1;
+function applyGraphViewport(){
+  const svg=$('#caseGraph');if(!svg)return;
+  const z=Math.max(.35,Math.min(3.5,state.graphZoom||1));state.graphZoom=z;
+  const baseW=1200,baseH=760,w=baseW/z,h=baseH/z,pan=state.graphPan||{x:0,y:0};
+  const x=(baseW-w)/2+pan.x,y=(baseH-h)/2+pan.y;
+  svg.setAttribute('viewBox',`${x} ${y} ${w} ${h}`);
+  const rd=$('#graphZoomReadout');if(rd)rd.textContent=Math.round(z*100)+'%';
+}
+function setGraphZoom(z){state.graphZoom=Math.max(.35,Math.min(3.5,z));applyGraphViewport()}
+function renderGraph(reset=false){if(!state.domain)return;const svg=$('#caseGraph'),nodes=graphNodes(),edges=graphEdges(),w=1200,h=760;svg.textContent='';$('#graphEmpty').style.display=nodes.length>1?'none':'flex';const defs=document.createElementNS('http://www.w3.org/2000/svg','defs');defs.innerHTML='<marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#4a3f36"/></marker>';svg.appendChild(defs);const auto=autoGraphPositions(nodes,edges,w,h);if(reset)state.graphPositions[state.domain.full]={};const store=graphPosStore();nodes.forEach(n=>{if(!store[n.id])store[n.id]=auto[n.id]});saveJSON('rd_graph_positions',state.graphPositions);const pos=store;
+  const edgeLayer=document.createElementNS('http://www.w3.org/2000/svg','g');edgeLayer.setAttribute('class','edges');svg.appendChild(edgeLayer);edges.forEach(e=>{const a=pos[e.source],b=pos[e.target];if(!a||!b)return;const line=document.createElementNS('http://www.w3.org/2000/svg','line');line.setAttribute('x1',a.x);line.setAttribute('y1',a.y);line.setAttribute('x2',b.x);line.setAttribute('y2',b.y);line.setAttribute('marker-end','url(#arrow)');line.setAttribute('class','graph-edge');line.dataset.edge=e.id;edgeLayer.appendChild(line);const tx=document.createElementNS('http://www.w3.org/2000/svg','text');tx.setAttribute('x',(a.x+b.x)/2);tx.setAttribute('y',(a.y+b.y)/2-5);tx.setAttribute('text-anchor','middle');tx.setAttribute('class','graph-edge-label');tx.textContent=e.label.replaceAll('_',' ');edgeLayer.appendChild(tx)});
+  const nodeLayer=document.createElementNS('http://www.w3.org/2000/svg','g');svg.appendChild(nodeLayer);nodes.forEach(n=>{const p=pos[n.id],g=document.createElementNS('http://www.w3.org/2000/svg','g');g.setAttribute('class',`graph-node ${n.root?'root '+n.type:n.type} ${state.graphSelected===n.id?'selected':''}`);g.setAttribute('transform',`translate(${p.x-78},${p.y-30})`);g.dataset.node=n.id;g.style.cursor='grab';const r=document.createElementNS('http://www.w3.org/2000/svg','rect');r.setAttribute('width',156);r.setAttribute('height',60);const t1=document.createElementNS('http://www.w3.org/2000/svg','text');t1.setAttribute('x',10);t1.setAttribute('y',18);t1.setAttribute('class','ntype');t1.textContent=n.root?`${state.domain.type} OBJETIVO`:n.type;const t2=document.createElementNS('http://www.w3.org/2000/svg','text');t2.setAttribute('x',10);t2.setAttribute('y',39);t2.setAttribute('class','nvalue');t2.textContent=truncateGraphValue(n.value);const title=document.createElementNS('http://www.w3.org/2000/svg','title');const ff=n.root?null:(state.findings[state.domain.full]||[]).find(x=>x.id===n.id);title.textContent=n.value+(ff?`\nEstado: ${ff.evidenceStatus||'MANUAL'}\nFuentes: ${[...new Set((ff.sources||[]).map(s=>s.name))].join(', ')}`:'');g.append(r,t1,t2,title);g.addEventListener('click',e=>{e.stopPropagation();state.graphSelected=n.id;renderGraph();});g.addEventListener('dblclick',e=>{e.stopPropagation();state.graphSelected=n.id;$('#pivotType').value=graphTypeForPivot(n.type);$('#pivotValue').value=n.value;generatePivot();renderGraph()});enableNodeDrag(g,n.id,svg,pos);nodeLayer.appendChild(g)});svg.onclick=()=>{state.graphSelected=rootNodeId();renderGraph()};refreshGraphInspector(nodes)}
+  applyGraphViewport();
+
+function enableNodeDrag(g,id,svg,pos){let dragging=false,offset={x:0,y:0};const point=e=>{const pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;const q=pt.matrixTransform(svg.getScreenCTM().inverse());return{x:q.x,y:q.y}};g.addEventListener('pointerdown',e=>{e.stopPropagation();dragging=true;g.setPointerCapture(e.pointerId);g.style.cursor='grabbing';const q=point(e);offset={x:q.x-pos[id].x,y:q.y-pos[id].y}});g.addEventListener('pointermove',e=>{if(!dragging)return;const q=point(e);pos[id]={x:Math.max(82,Math.min(1118,q.x-offset.x)),y:Math.max(34,Math.min(726,q.y-offset.y))};g.setAttribute('transform',`translate(${pos[id].x-78},${pos[id].y-30})`);});g.addEventListener('pointerup',()=>{if(!dragging)return;dragging=false;g.style.cursor='grab';saveJSON('rd_graph_positions',state.graphPositions);renderGraph()})}
+function refreshGraphInspector(nodes=graphNodes()){const selected=graphNodeById(state.graphSelected)||nodes[0];if(selected)state.graphSelected=selected.id;$('#graphSelectedLabel').value=selected?`${selected.type} · ${selected.value}`:'';const target=$('#graphTarget');target.textContent='';nodes.filter(n=>!selected||n.id!==selected.id).forEach(n=>{const o=document.createElement('option');o.value=n.id;o.textContent=`${n.type} · ${n.value}`;target.appendChild(o)});fillRelationSelect($('#graphRelation'),'RELACIONADO');renderNodeQuickActions(selected)}
+
+(function enableGraphPan(){
+ const svg=$('#caseGraph');let active=false,start=null,origin=null;
+ svg.addEventListener('pointerdown',e=>{if(e.target!==svg)return;active=true;svg.classList.add('panning');start={x:e.clientX,y:e.clientY};origin={...(state.graphPan||{x:0,y:0})};svg.setPointerCapture?.(e.pointerId)});
+ svg.addEventListener('pointermove',e=>{if(!active)return;const z=state.graphZoom||1;state.graphPan={x:origin.x-(e.clientX-start.x)/z,y:origin.y-(e.clientY-start.y)/z};applyGraphViewport()});
+ const stop=()=>{active=false;svg.classList.remove('panning')};svg.addEventListener('pointerup',stop);svg.addEventListener('pointercancel',stop);
+})();
+
+$('#btnGraphZoomIn').onclick=()=>setGraphZoom((state.graphZoom||1)*1.2);
+$('#btnGraphZoomOut').onclick=()=>setGraphZoom((state.graphZoom||1)/1.2);
+$('#btnGraphZoomReset').onclick=()=>setGraphZoom(1);
+$('#caseGraph').addEventListener('wheel',e=>{if(!state.domain)return;e.preventDefault();setGraphZoom((state.graphZoom||1)*(e.deltaY<0?1.12:1/1.12))},{passive:false});
+$('#btnGraphExpand').onclick=()=>{const card=$('.graph-card');card.classList.toggle('graph-expanded');const on=card.classList.contains('graph-expanded');$('#btnGraphExpand').textContent=on?'↙ Vista normal':'↗ Vista grande';setTimeout(()=>renderGraph(false),30)};
+$('#btnGraphFit').onclick=()=>{state.graphZoom=1;state.graphPan={x:0,y:0};renderGraph(true)};
+$('#btnGraphPivot').onclick=()=>{const n=graphNodeById(state.graphSelected);if(!n||n.root){status('Selecciona un hallazgo para pivotar');return}$('#pivotType').value=graphTypeForPivot(n.type);$('#pivotValue').value=n.value;generatePivot();$('#pivotValue').scrollIntoView({behavior:'smooth',block:'center'})};
+$('#btnGraphCopy').onclick=()=>{const n=graphNodeById(state.graphSelected);if(n)copyText(n.value)};
+$('#btnGraphLink').onclick=()=>{if(!state.domain)return;const src=state.graphSelected,tgt=$('#graphTarget').value,label=$('#graphRelation').value;if(!src||!tgt||src===tgt)return;const k=state.domain.full;state.graphLinks[k]=state.graphLinks[k]||[];if(state.graphLinks[k].some(e=>e.source===src&&e.target===tgt&&e.label===label)){status('La relación ya existe');return}state.graphLinks[k].push({id:'e_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,6),source:src,target:tgt,label});saveJSON('rd_graph_links',state.graphLinks);renderGraph();status('Relación añadida al grafo ✔')};
+$('#btnGraphRelations').onclick=()=>{if(!state.domain)return;openOverlay('Relaciones del grafo',(body)=>{const draw=()=>{body.textContent='';const nodes=new Map(graphNodes().map(n=>[n.id,n]));const edges=graphEdges();if(!edges.length){body.innerHTML='<div class="empty-msg">Sin relaciones todavía.</div>';return}edges.forEach(e=>{const row=document.createElement('div');row.className='pivot-result';const txt=document.createElement('span');txt.textContent=`${nodes.get(e.source)?.value||e.source}  → ${e.label.replaceAll('_',' ')} →  ${nodes.get(e.target)?.value||e.target}`;const acts=document.createElement('span');if(e.primary){const b=document.createElement('button');b.className='del-btn';b.textContent='Principal';b.disabled=true;b.title='Esta relación pertenece al hallazgo. Edítala eliminando y recreando el hallazgo.';acts.appendChild(b)}else{const del=document.createElement('button');del.className='del-btn';del.textContent='Eliminar';del.onclick=()=>{const k=state.domain.full;state.graphLinks[k]=(state.graphLinks[k]||[]).filter(x=>x.id!==e.id);saveJSON('rd_graph_links',state.graphLinks);renderGraph();draw()};acts.appendChild(del)}row.append(txt,acts);body.appendChild(row)})};draw()})};
+$('#btnGraphExport').onclick=()=>{if(!state.domain)return;const svg=$('#caseGraph').cloneNode(true);svg.setAttribute('xmlns','http://www.w3.org/2000/svg');const css=`<style>.graph-edge{stroke:#4a3f36;stroke-width:1.6;opacity:.7}.graph-edge-label{font:10px monospace;fill:#4a3f36}.graph-node rect{stroke:#2b2320;stroke-width:2;fill:#f0e6cc}.graph-node.root rect{fill:#c4b088;stroke-width:3}.graph-node.DOMAIN rect{fill:#dbe8d8}.graph-node.IP rect{fill:#dbe6f0}.graph-node.SUBDOMINIO rect{fill:#dbe8d8}.graph-node.EMAIL rect{fill:#eee0bd}.graph-node.NS rect,.graph-node.MX rect{fill:#e1d8c6}.graph-node.ASN rect{fill:#ddd7ee}.graph-node.URL rect{fill:#d8e7e5}.graph-node.EMPRESA rect{fill:#ead5d1}.graph-node text{font-family:monospace;fill:#2b2320}.ntype{font-size:9px;font-weight:bold}.nvalue{font-size:11px;font-weight:bold}</style>`;svg.insertAdjacentHTML('afterbegin',css);downloadFile(`rastro-web_grafo_${safeFilename()}.svg`,new XMLSerializer().serializeToString(svg),'image/svg+xml')};
+
+function pivotQueries(type,value){const v=value.trim(),q=s=>ENGINES.google(s);const out=[];const add=(name,url,copy='')=>out.push({name,url,copy});
+  if(type==='DOMAIN'){add('SecurityTrails',`https://securitytrails.com/domain/${encodeURIComponent(v)}/dns`);add('ICANN Lookup',`https://lookup.icann.org/en/lookup?name=${encodeURIComponent(v)}`);add('urlscan',`https://urlscan.io/search/#domain%3A${encodeURIComponent(v)}`);add('VirusTotal',`https://www.virustotal.com/gui/domain/${encodeURIComponent(v)}`);add('CTLogs.dev',`https://ctlogs.dev/search?q=${encodeURIComponent('*.'+v)}`);add('Wayback',`https://web.archive.org/web/*/https://${encodeURIComponent(v)}/*`);}
+  else if(type==='IP'){add('RIPEstat',`https://stat.ripe.net/${encodeURIComponent(v)}`);add('AbuseIPDB',`https://www.abuseipdb.com/check/${encodeURIComponent(v)}`);add('WhoisXML DRS','https://drs.whoisxmlapi.com/',v);add('Shodan',`https://www.shodan.io/host/${encodeURIComponent(v)}`);add('Censys host',`https://search.censys.io/hosts/${encodeURIComponent(v)}`);add('VirusTotal IP',`https://www.virustotal.com/gui/ip-address/${encodeURIComponent(v)}`);add('AlienVault OTX',`https://otx.alienvault.com/indicator/ip/${encodeURIComponent(v)}`);add('RDAP IP',`https://rdap.org/ip/${encodeURIComponent(v)}`);add('BGP / ASN (Google)',q(`"${v}" ASN`));add('Reverse IP (Google)',q(`"${v}" domain OR hostname`));}
+  else if(type==='ASN'){const a=v.toUpperCase().startsWith('AS')?v:'AS'+v;add('RIPEstat',`https://stat.ripe.net/${encodeURIComponent(a)}`);add('Hurricane Electric',`https://bgp.he.net/${encodeURIComponent(a)}`);add('Shodan ASN',`https://www.shodan.io/search?query=${encodeURIComponent('asn:'+a)}`);add('Google',q(`"${a}"`));}
+  else if(type==='EMAIL'){add('Google',q(`"${v}"`));add('Bing',ENGINES.bing(`"${v}"`));add('GitHub código',ENGINES.githubcode(v));add('Documentos',q(`"${v}" (filetype:pdf OR filetype:docx OR filetype:xlsx)`));}
+  else if(type==='SUBDOMINIO'){add('Google',q(`"${v}"`));add('urlscan',`https://urlscan.io/search/#domain%3A${encodeURIComponent(v)}`);add('VirusTotal',`https://www.virustotal.com/gui/domain/${encodeURIComponent(v)}`);add('Wayback',`https://web.archive.org/web/*/https://${encodeURIComponent(v)}/*`);add('crt.sh',`https://crt.sh/?q=${encodeURIComponent(v)}`);add('CTLogs.dev',`https://ctlogs.dev/search?q=${encodeURIComponent(v)}`);}
+  else if(type==='NS'||type==='MX'){add('Google exacto',q(`"${v}"`));add('DNSlytics búsqueda',`https://dnslytics.com/search?q=${encodeURIComponent(v)}`);add('ViewDNS Reverse NS',type==='NS'?`https://viewdns.info/reversens/?ns=${encodeURIComponent(v)}`:q(`"${v}" mail provider domains`));}
+  else if(type==='URL'){add('VirusTotal URL','https://www.virustotal.com/gui/home/url',v);add('urlscan Search',`https://urlscan.io/search/#page.url%3A${encodeURIComponent(v)}`);add('Wayback',`https://web.archive.org/web/*/${encodeURIComponent(v)}`);add('Google',q(`"${v}"`));}
+  else {add('Google',q(`"${v}"`));add('Bing',ENGINES.bing(`"${v}"`));add('LinkedIn',q(`site:linkedin.com "${v}"`));}
+  return out;
+}
+function generatePivot(){const type=$('#pivotType').value,val=$('#pivotValue').value.trim(),box=$('#pivotResults');box.textContent='';if(!val){status('Introduce un dato para pivotar');return}pivotQueries(type,val).forEach(r=>{const row=document.createElement('div');row.className='pivot-result';const n=document.createElement('span');n.textContent=r.name;const bt=document.createElement('button');bt.className='del-btn';bt.textContent='Abrir';bt.onclick=()=>{if(r.copy)copyText(r.copy);openExternal(r.url)};row.append(n,bt);box.appendChild(row)})}
+$('#btnPivot').onclick=generatePivot;
+
+function currentDork(){if(!state.domain)return 'indicador';const d=state.domain;let q=d.type==='DOMAIN'?`site:${d.full}`:d.type==='URL'?`"${d.full}"`:`"${d.full}"`;const exact=$('#dorkExact').value.trim(),ft=$('#dorkFiletype').value.trim().replace(/^filetype:/i,''),iu=$('#dorkInurl').value.trim().replace(/^inurl:/i,''),ex=$('#dorkExclude').value.trim();if(exact)q+=` "${exact.replaceAll('"','')}"`;if(ft)q+=` filetype:${ft.replace(/\s/g,'')}`;if(iu)q+=` inurl:${iu.replace(/\s/g,'')}`;if(ex)q+=` -"${ex.replaceAll('"','')}"`;return q}
+function updateDorkPreview(){$('#dorkPreview').textContent=currentDork()}['dorkExact','dorkFiletype','dorkInurl','dorkExclude'].forEach(id=>$('#'+id).addEventListener('input',updateDorkPreview));$('#btnDorkCopy').onclick=()=>copyText(currentDork());$('#btnDorkGoogle').onclick=()=>openExternal(ENGINES.google(currentDork()));$('#btnDorkBing').onclick=()=>openExternal(ENGINES.bing(currentDork()));
+
+
+
+const WORKFLOW_BY_TYPE={
+ DOMAIN:[['overview','Identificación'],['technical','DNS / infraestructura'],['ownership_history','WHOIS histórico'],['subdomains','Subdominios / CT'],['threatintel','Threat intelligence'],['archive','Histórico web']],
+ IP:[['ip_ident','Identificación'],['ip_privacy','Proveedor / VPN'],['ip_registry','RDAP / asignación'],['ip_routing','ASN / BGP'],['ip_reverse','Reverse DNS'],['ip_reputation','Reputación']],
+ URL:[['url_local','Análisis local'],['url_reputation','Reputación'],['url_observations','Observaciones'],['url_history','Histórico'],['url_host','Host / infraestructura']]
+};
+function categoryTouched(cat){
+  if(!state.domain)return false;const opened=state.opened[state.domain.full]||{};return Object.keys(opened).some(k=>k.startsWith(cat+'|'))
+}
+function evidenceTouches(label){
+  const arr=state.findings[state.domain?.full]||[],s=label.toLowerCase();
+  if(/proveedor|vpn/.test(s))return arr.some(f=>['PROVEEDOR','PRIVACIDAD'].includes(f.type));
+  if(/whois histórico/.test(s))return arr.some(f=>f.historicalDate||['TITULAR','EMPRESA','EMAIL'].includes(f.type)&&f.evidenceStatus==='HISTORICO');
+  if(/asn|bgp/.test(s))return arr.some(f=>f.type==='ASN');
+  if(/reverse dns/.test(s))return arr.some(f=>['DOMAIN','SUBDOMINIO','NS'].includes(f.type));
+  return false
+}
+function renderWorkflow(){
+  if(!state.domain||!$('#workflowSteps'))return;const steps=WORKFLOW_BY_TYPE[state.domain.type]||[],box=$('#workflowSteps');box.textContent='';let done=0,firstPending=null;
+  steps.forEach(([cat,label])=>{const ok=categoryTouched(cat)||evidenceTouches(label);if(ok)done++;else if(!firstPending)firstPending={cat,label};const el=document.createElement('div');el.className='workflow-step '+(ok?'done':'');el.innerHTML=`<span class="mark">${ok?'✓':'○'}</span><span>${escapeHTML(label)}</span>`;el.onclick=()=>{const d=document.querySelector(`details[data-cat="${cat}"]`);if(d){d.open=true;d.scrollIntoView({behavior:'smooth',block:'start'})}};el.style.cursor='pointer';box.appendChild(el)});
+  const pct=steps.length?Math.round(done/steps.length*100):0;$('#workflowProgress').textContent=pct+'%';$('#workflowFill').style.width=pct+'%';
+  $('#workflowNext').textContent=firstPending?`SIGUIENTE PASO RECOMENDADO → ${firstPending.label}. Pulsa en ese bloque para ir a la sección.`:'Cobertura básica completada. Revisa corroboraciones, cronología y hallazgos relevantes antes de cerrar el informe.'
+}
+function findingTimelineDate(f){
+  const raw=f.historicalDate||'';const parsed=Date.parse(raw);if(Number.isFinite(parsed))return {ts:parsed,label:raw,historical:true};
+  const ts=f.observedAt||f.ts||Date.now();return {ts,label:new Date(ts).toLocaleString(),historical:false}
+}
+function renderTimeline(){
+  const box=$('#timelineList');if(!box||!state.domain)return;box.textContent='';const arr=(state.findings[state.domain.full]||[]).map(f=>({f,d:findingTimelineDate(f)})).sort((a,b)=>a.d.ts-b.d.ts);
+  if(!arr.length){box.innerHTML='<div class="empty-msg">Añade evidencia histórica o hallazgos para construir la cronología.</div>';return}
+  arr.forEach(({f,d})=>{const el=document.createElement('div');el.className='timeline-item';const src=[...new Set((f.sources||[]).map(s=>s.name).filter(Boolean))].join(', ')||f.sourceName||'RASTRO';el.innerHTML=`<div class="timeline-date">${d.historical?'FECHA HISTÓRICA':'INCORPORADO'} · ${escapeHTML(d.label)}</div><b>${escapeHTML(f.type)} · ${escapeHTML(f.value)}</b><div>${escapeHTML((f.relation||defaultRelation(f.type)).replaceAll('_',' '))}</div><div class="timeline-source">Fuente: ${escapeHTML(src)} · Estado: ${escapeHTML(f.evidenceStatus||'MANUAL')}</div>`;box.appendChild(el)})
+}
+function nodeAction(name,url,copyValue=''){
+  const b=document.createElement('button');b.className='btn-stamp ghost small quick-source';b.textContent=name;b.onclick=()=>{if(copyValue)copyText(copyValue);openExternal(url)};return b
+}
+function renderNodeQuickActions(node){
+  const box=$('#nodeQuickActions');if(!box)return;box.textContent='';if(!node)return;
+  const v=node.value,type=node.type;
+  if(type==='IP'){box.append(nodeAction('IPinfo',`https://ipinfo.io/${encodeURIComponent(v)}`),nodeAction('RIPEstat',`https://stat.ripe.net/${encodeURIComponent(v)}`),nodeAction('AbuseIPDB',`https://www.abuseipdb.com/check/${encodeURIComponent(v)}`),nodeAction('VirusTotal',`https://www.virustotal.com/gui/ip-address/${encodeURIComponent(v)}`),nodeAction('IPcost / IPme','https://ipcost.com/',v))}
+  else if(type==='DOMAIN'||type==='SUBDOMINIO'){const d=normalizeDomain(v);const q=d?.base||v;box.append(nodeAction('Whoxy',`https://www.whoxy.com/${encodeURIComponent(q)}`),nodeAction('RDAP',`https://rdap.org/domain/${encodeURIComponent(q)}`),nodeAction('VirusTotal',`https://www.virustotal.com/gui/domain/${encodeURIComponent(q)}`),nodeAction('Wayback',`https://web.archive.org/web/*/${encodeURIComponent(q)}`))}
+  else if(type==='URL'){box.append(nodeAction('VirusTotal',`https://www.virustotal.com/gui/url/${btoa(unescape(encodeURIComponent(v))).replace(/=+$/,'').replace(/\+/g,'-').replace(/\//g,'_')}`),nodeAction('urlscan','https://urlscan.io/',v),nodeAction('Wayback',`https://web.archive.org/web/*/${v}`))}
+  else if(type==='EMAIL'||type==='TITULAR'||type==='EMPRESA'){box.append(nodeAction('Whoxy Reverse WHOIS','https://www.whoxy.com/reverse-whois/',v),nodeAction('Google',ENGINES.google(`"${v}"`)))}
+  else if(type==='ASN'){box.append(nodeAction('RIPEstat',`https://stat.ripe.net/${encodeURIComponent(v)}`),nodeAction('HE BGP',`https://bgp.he.net/${encodeURIComponent(v)}`))}
+}
+
+function uniqueVals(arr,type){return [...new Set(arr.filter(x=>x.type===type).map(x=>x.value).filter(Boolean))]}
+function relationVals(arr,rels){return [...new Set(arr.filter(x=>rels.includes(x.relation)).map(x=>x.value).filter(Boolean))]}
+function naturalList(values,max=5){
+  const a=[...new Set(values)].slice(0,max);if(!a.length)return '';
+  if(a.length===1)return a[0];return a.slice(0,-1).join(', ')+' y '+a.at(-1);
+}
+function buildInvestigatorSummary(){
+  if(!state.domain)return 'No hay un indicador activo.';
+  const d=state.domain,k=d.full,arr=state.findings[k]||[],edges=graphEdges(),parts=[];
+  if(d.type==='IP'){
+    parts.push(`El expediente parte de la dirección IP ${d.full}, identificada localmente como ${d.version} de ámbito ${d.scope.toLowerCase()}.`);
+    const providers=uniqueVals(arr,'PROVEEDOR'),asns=uniqueVals(arr,'ASN'),privacy=uniqueVals(arr,'PRIVACIDAD');
+    if(providers.length)parts.push(`Las fuentes incorporadas al expediente relacionan la IP con ${providers.length===1?'el proveedor':'los proveedores'} ${naturalList(providers)}.`);
+    if(asns.length)parts.push(`Se han documentado como pivotes de red ${naturalList(asns)}, que conviene contrastar con RDAP/RIPEstat para confirmar prefijo y operador.`);
+    if(privacy.length){
+      const p=privacy.map(x=>x.toLowerCase());
+      parts.push(`Existen señales incorporadas de anonimización o tipo de conexión: ${naturalList(privacy)}. Estas etiquetas proceden de fuentes externas y no deben interpretarse de forma aislada como prueba concluyente del uso de una VPN por una persona concreta.`);
+    } else parts.push('No se han incorporado todavía al expediente señales explícitas de VPN, proxy, Tor o hosting/datacenter.');
+    const domains=[...uniqueVals(arr,'DOMAIN'),...uniqueVals(arr,'SUBDOMINIO')];
+    if(domains.length)parts.push(`También aparecen dominios o hostnames relacionados técnicamente: ${naturalList(domains)}. La coincidencia de infraestructura no acredita por sí sola titularidad común.`);
+  } else if(d.type==='DOMAIN'){
+    parts.push(`El expediente parte del dominio ${d.full}${d.base!==d.full?`, cuyo dominio registrable es ${d.base}`:''}.`);
+    const owners=uniqueVals(arr,'TITULAR'),companies=relationVals(arr,['ANTIGUA_EMPRESA']),emails=relationVals(arr,['EMAIL_HISTORICO']),dates=uniqueVals(arr,'FECHA'),nss=relationVals(arr,['NS_HISTORICO']);
+    if(owners.length||companies.length||emails.length){
+      let s='En el material histórico incorporado';
+      if(dates.length)s+=` (con referencias temporales como ${naturalList(dates,3)})`;
+      s+=' se han identificado';
+      const bits=[];if(owners.length)bits.push(`titulares/nombres: ${naturalList(owners)}`);if(companies.length)bits.push(`organizaciones: ${naturalList(companies)}`);if(emails.length)bits.push(`correos: ${naturalList(emails)}`);
+      parts.push(s+' '+bits.join('; ')+'.');
+      parts.push('Estos datos reflejan apariciones en registros WHOIS históricos y deben conservarse junto con su fecha de observación; no implican necesariamente titularidad actual.');
+    } else parts.push('Todavía no se han incorporado al expediente datos de antiguos titulares, organizaciones o correos procedentes de WHOIS histórico.');
+    if(nss.length)parts.push(`Se han registrado nameservers históricos como ${naturalList(nss)}, útiles para reconstruir cambios de infraestructura.`);
+    const ips=uniqueVals(arr,'IP'),asns=uniqueVals(arr,'ASN');
+    if(ips.length)parts.push(`La investigación técnica ha añadido ${ips.length} dirección${ips.length>1?'es':''} IP al grafo: ${naturalList(ips)}.`);
+    if(asns.length)parts.push(`Como contexto de red aparecen ${naturalList(asns)}.`);
+  } else {
+    parts.push(`El expediente parte de la URL ${d.full}. El análisis estructural local identificó como host ${d.url.hostname}${d.domain?.base?` y como dominio registrable ${d.domain.base}`:''}.`);
+    const ips=uniqueVals(arr,'IP'),domains=[...uniqueVals(arr,'DOMAIN'),...uniqueVals(arr,'SUBDOMINIO')];
+    if(domains.length)parts.push(`El grafo contiene además los siguientes dominios/hostnames relacionados: ${naturalList(domains)}.`);
+    if(ips.length)parts.push(`Se han incorporado como infraestructura observada ${naturalList(ips)}.`);
+  }
+  const emails=uniqueVals(arr,'EMAIL'),urls=uniqueVals(arr,'URL');
+  if(d.type!=='DOMAIN'&&emails.length)parts.push(`Se han detectado correos relevantes: ${naturalList(emails)}.`);
+  if(urls.length&&d.type!=='URL')parts.push(`Se han añadido ${urls.length} URL${urls.length>1?'s':''} como pivotes adicionales.`);
+  if(arr.length)parts.push(`En total, el expediente contiene ${arr.length} hallazgo${arr.length!==1?'s':''} y ${edges.length} relación${edges.length!==1?'es':''} en el grafo.`);
+  else parts.push('El expediente todavía no contiene hallazgos adicionales; el resumen ganará valor a medida que se incorporen resultados contrastados.');
+  const important=arr.filter(f=>f.important),corroborated=arr.filter(f=>f.evidenceStatus==='CORROBORADO');
+  if(important.length)parts.push(`HALLAZGOS RELEVANTES: ${important.slice(0,6).map(f=>`${f.type} ${f.value}`).join('; ')}.`);
+  if(corroborated.length)parts.push(`CORROBORACIÓN: ${corroborated.length} hallazgo${corroborated.length!==1?'s':''} cuenta${corroborated.length===1?'':'n'} con procedencia de dos o más fuentes registradas en RASTRO.`);
+  const pending=(WORKFLOW_BY_TYPE[d.type]||[]).filter(([cat,label])=>!categoryTouched(cat)&&!evidenceTouches(label)).map(x=>x[1]);
+  if(pending.length)parts.push(`PENDIENTE DE COMPROBACIÓN: ${pending.slice(0,4).join('; ')}.`);
+  parts.push('Valoración: diferenciar siempre datos observados, inferencias técnicas y atribución. Las coincidencias de IP, ASN, nameserver, proveedor o WHOIS histórico deben corroborarse con otras fuentes y con su contexto temporal.');
+  return parts.join('\n\n');
+}
+function renderInvestigatorSummary(){
+  const el=$('#investigatorSummary');if(!el)return;
+  const txt=buildInvestigatorSummary();el.textContent=txt;
+  if(state.domain){
+    const arr=state.findings[state.domain.full]||[];
+    $('#summaryTargetType').textContent=`Objetivo: ${state.domain.type}`;
+    $('#summaryFindingCount').textContent=`${arr.length} hallazgo${arr.length===1?'':'s'}`;
+    $('#summaryRelationCount').textContent=`${graphEdges().length} relación${graphEdges().length===1?'':'es'}`;
+  }
+}
+$('#btnRefreshSummary').onclick=()=>{renderInvestigatorSummary();status('Resumen actualizado ✔')};
+$('#btnCopySummary').onclick=()=>copyText($('#investigatorSummary').textContent);
+
+function buildMarkdownReport(){const d=state.domain,k=d.full,favs=state.favorites.filter(f=>f.domain===k),finds=state.findings[k]||[];let md=`# RASTRO-WEB v2.0 — Expediente OSINT\n\n**REF:** ${$('#caseIdTop').textContent}\n\n**Tipo:** ${d.type}\n\n**Indicador:** ${d.full}\n\n**Fecha:** ${new Date().toLocaleString()}\n\n`;if(d.type==='URL')md+=`**Host:** ${d.url.hostname}\n\n**Dominio base:** ${d.domain?.base||'—'}\n\n`;if(d.type==='IP')md+=`**Versión:** ${d.version}\n\n**Ámbito:** ${d.scope}\n\n`;const nmap=new Map(graphNodes().map(n=>[n.id,n]));const rels=graphEdges();md+=`## Resumen para el investigador\n\n${buildInvestigatorSummary()}\n\n## Notas\n\n${state.notes[k]||'(sin notas)'}\n\n## Hallazgos\n\n${finds.length?finds.map(x=>`- **${x.type}:** ${x.value}${x.automatic?' _(automático)_':''}`).join('\n'):'(sin hallazgos)'}\n\n## Grafo / relaciones\n\n${rels.length?rels.map(e=>`- ${nmap.get(e.source)?.value||e.source} --${e.label}--> ${nmap.get(e.target)?.value||e.target}`).join('\n'):'(sin relaciones)'}\n\n## Favoritos\n\n${favs.length?favs.map(f=>`- ${f.name}: ${f.query} — ${f.url}`).join('\n'):'(sin favoritos)'}\n\n## Consultas OSINT\n\n`;currentCatOrder(d).forEach(id=>{const cfg=CATS[id],b=cfg.build(d);if(!b.groups&&!b.variants)return;md+=`### ${cfg.label}\n\n`;if(b.groups)b.groups.forEach(g=>{if(!g.items?.length)return;md+=`**${g.title}**\n\n`;limitByDepth(g.items).forEach(i=>md+=`- ${i.name}: \`${i.query}\` — ${i.url}\n`);md+='\n'});if(b.variants){b.variants.forEach(v=>md+=`- ${v}\n`);md+='\n'}});md+='---\n\n*RASTRO-WEB no realiza escaneo activo ni consulta automáticamente las fuentes externas. El análisis estructural y la captura se ejecutan localmente.*\n';return md}
+function downloadFile(name,content,mime){const blob=new Blob([content],{type:mime}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),500);status('Informe exportado ✔')}
+$('#btnExport').onclick=()=>{if(!state.domain)return;openOverlay('Exportar expediente',(body,ov)=>{const p=document.createElement('p');p.style.fontSize='12px';p.textContent='Elige formato. Incluye notas, hallazgos, relaciones del grafo y favoritos locales.';body.appendChild(p);[['Markdown','md','text/markdown'],['JSON','json','application/json'],['Texto','txt','text/plain']].forEach(([label,ext,mime])=>{const b=document.createElement('button');b.className='btn-stamp ghost small';b.style.margin='4px';b.textContent=label;b.onclick=()=>{let content=buildMarkdownReport();if(ext==='json'){const k=state.domain.full;content=JSON.stringify({ref:$('#caseIdTop').textContent,date:new Date().toISOString(),target:state.domain,summary:buildInvestigatorSummary(),notes:state.notes[k]||'',findings:state.findings[k]||[],graph:{links:state.graphLinks[k]||[],positions:state.graphPositions[k]||{}},favorites:state.favorites.filter(f=>f.domain===k)},null,2)}downloadFile(`rastro-web_${safeFilename()}.${ext}`,content,mime);ov.remove()};body.appendChild(b)})})};
+
+$('#btnAnalyze').onclick=analyze;domainInput.addEventListener('keydown',e=>{if(e.key==='Enter')analyze()});
+$('#btnClear').onclick=()=>{domainInput.value='';inputError.hidden=true;state.domain=null;state.selected.clear();emptyState.hidden=false;resultsWrap.hidden=true;$('#btnExport').disabled=true;$('#btnCopyAll').disabled=true;$('#btnOpenSelected').disabled=true;$('#caseIdTop').textContent='—';$('#indicatorTypeBar').hidden=true;filterInput.value='';state.filter='';status('')};
+$('#btnCopyDomain').onclick=()=>state.domain?copyText(state.domain.full):status('Analiza un indicador primero');
+filterInput.oninput=()=>{state.filter=filterInput.value.trim();if(state.domain)renderCategories()};
+$('#btnExpandAll').onclick=()=>categoriesEl.querySelectorAll('details.category').forEach(d=>d.open=true);$('#btnCollapseAll').onclick=()=>categoriesEl.querySelectorAll('details.category').forEach(d=>d.open=false);
+document.querySelectorAll('.depth-btn').forEach(btn=>btn.onclick=()=>{document.querySelectorAll('.depth-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');state.depth=btn.dataset.depth;if(state.domain){renderStats();renderCategories()}});
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();if(!resultsWrap.hidden){filterInput.focus();filterInput.select()}}if(e.key==='Escape'){if(document.activeElement===filterInput||state.filter){filterInput.value='';state.filter='';if(state.domain)renderCategories()}}});
+document.getElementById('today').textContent=new Date().toLocaleDateString('es-ES');
+</script>
+</body>
+</html>
