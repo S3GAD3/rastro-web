@@ -16,6 +16,8 @@ software adicional ni disponer de un backend propio**.
 > Está orientada a la investigación pasiva, la consulta de fuentes
 > abiertas y la organización de información obtenida legítimamente
 > durante una investigación.
+>
+> **Enlace a la herramienta: https://s3gad3.github.io/rastro-web/
 
 ------------------------------------------------------------------------
 
