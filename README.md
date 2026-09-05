@@ -4,6 +4,8 @@
 
 **RASTRO-WEB** es una aplicación web de una sola página (single-file HTML/CSS/JS) pensada como **puesto de trabajo OSINT** para investigadores de cibercrimen y ciberinteligencia. Dado un **dominio**, una **dirección IP** o una **URL**, la herramienta detecta automáticamente el tipo de indicador y genera de forma instantánea decenas de consultas y accesos directos a fuentes públicas (WHOIS/RDAP, DNS, Certificate Transparency, Wayback Machine, Shodan/Censys, threat intelligence, redes sociales, GitHub, dorks de Google/Bing, etc.), a la vez que ofrece un **espacio de caso** (notas, hallazgos, grafo de relaciones, cronología y resumen del expediente) para documentar la investigación.
 
+Enlace a la herramienta: https://s3gad3.github.io/rastro-web/
+
 > ⚠️ **RASTRO-WEB no es un escáner.** No realiza peticiones activas contra el objetivo, no evita CORS, no usa proxies ni claves de API propias. Es un **generador de accesos y consultas** hacia fuentes OSINT públicas: quien decide abrir cada fuente es el investigador, y solo entonces el indicador "sale" del navegador hacia ese tercero.
 
 > **Versión documentada: v2.2.** Incluye importación/exportación de expediente (con exportación cifrada AES-GCM y hash de integridad SHA-256), tema claro/oscuro y ajustes de visualización para tablet, además de las funciones OSINT originales.
