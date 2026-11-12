@@ -1,184 +1,298 @@
-# RASTRO · WEB — Kit de Análisis de Infraestructura OSINT
+# RASTRO WEB
 
-**Licencia:** MIT · ver [`LICENSE`](./LICENSE)
+**Herramienta OSINT para investigar dominios, direcciones IP y URL desde el navegador.**
+Un único fichero HTML, sin servidor, sin instalación y sin claves de API.
 
-**RASTRO-WEB** es una aplicación web de una sola página (single-file HTML/CSS/JS) pensada como **puesto de trabajo OSINT** para investigadores de cibercrimen y ciberinteligencia. Dado un **dominio**, una **dirección IP** o una **URL**, la herramienta detecta automáticamente el tipo de indicador y genera de forma instantánea decenas de consultas y accesos directos a fuentes públicas (WHOIS/RDAP, DNS, Certificate Transparency, Wayback Machine, Shodan/Censys, threat intelligence, redes sociales, GitHub, dorks de Google/Bing, etc.), a la vez que ofrece un **espacio de caso** (notas, hallazgos, grafo de relaciones, cronología y resumen del expediente) para documentar la investigación.
+![Licencia MIT](https://img.shields.io/badge/licencia-MIT-blue)
+![Versión 3.0](https://img.shields.io/badge/versi%C3%B3n-3.0-1259b8)
+![Sin backend](https://img.shields.io/badge/backend-ninguno-0a2452)
 
-Enlace a la herramienta: https://s3gad3.github.io/rastro-web/
-
-> ⚠️ **RASTRO-WEB no es un escáner.** No realiza peticiones activas contra el objetivo, no evita CORS, no usa proxies ni claves de API propias. Es un **generador de accesos y consultas** hacia fuentes OSINT públicas: quien decide abrir cada fuente es el investigador, y solo entonces el indicador "sale" del navegador hacia ese tercero.
-
-> **Versión documentada: v2.2.** Incluye importación/exportación de expediente (con exportación cifrada AES-GCM y hash de integridad SHA-256), tema claro/oscuro y ajustes de visualización para tablet, además de las funciones OSINT originales.
-
----
-
-## 1. ¿Para quién es esta herramienta?
-
-Está pensada para investigadores policiales, analistas de ciberinteligencia, equipos CERT/SOC o profesionales de *threat intelligence* que necesitan:
-
-- Acelerar la fase de **triage** de un indicador (dominio, IP o URL) sin memorizar decenas de URLs de servicios OSINT.
-- Mantener un **expediente ordenado** (hallazgos, relaciones, notas, cronología) por cada indicador investigado.
-- Trabajar con **trazabilidad y evidencias**, distinguiendo dato observado, dato histórico y dato inferido.
-- Operar en un entorno **100% local**, sin depender de servidores propios ni de conexiones API de terceros.
+RASTRO WEB reúne en una sola pantalla las tres cosas que un investigador hace al recibir un indicador web: **consultar** los datos técnicos públicos, **pivotar** hacia fuentes externas y **documentar** lo hallado con su procedencia. Todo el trabajo se guarda en el propio navegador.
 
 ---
 
-## 2. Valoración como herramienta de inteligencia
+## Índice
 
-### Utilidad
-- **Ahorro de tiempo real en la fase de reconocimiento pasivo**: sustituye una checklist mental de "qué mirar" (WHOIS, DNS, CT logs, Wayback, Shodan, reputación, redes sociales...) por un panel ya organizado y con consultas precargadas.
-- **Estandariza el proceso**: dos investigadores distintos analizando el mismo indicador seguirán el mismo flujo de categorías, reduciendo el riesgo de "olvidar" una fuente relevante.
-- **Gestión de caso incorporada**: hallazgos, grafo de relaciones, cronología y resumen automático conviven con el motor de búsqueda, algo que normalmente exige varias herramientas distintas (bloc de notas + Maltego + hoja de cálculo).
-- **Generador de dorks integrado**: construye combinaciones `site:` / `filetype:` / `inurl:` sin que el investigador tenga que recordar la sintaxis.
-
-### Facilidad de uso
-- Curva de aprendizaje muy baja: un único campo de entrada, detección automática de tipo, y navegación por pestañas/categorías con niveles de profundidad (**Esencial / Ampliado / Completo**) que evitan saturar al usuario novato.
-- El **panel de control de investigación** (barra de progreso) orienta sobre qué pasos quedan pendientes, lo que resulta muy útil para investigadores en formación.
-- El **resumen para el investigador** en lenguaje natural facilita el volcado inicial a un informe o atestado, aunque **debe revisarse siempre**, ya que es una plantilla determinista y no un análisis semántico real.
-
-### Limitaciones a tener en cuenta
-- **El almacenamiento en vivo sigue siendo local (`localStorage`)**: no hay sincronización entre equipos ni copia de seguridad automática; si se borra el caché del navegador se pierde el expediente. Desde la v2.2 la app avisa periódicamente si llevas más de 15 minutos sin exportar, pero conviene **exportar con frecuencia** (Markdown/JSON/TXT o JSON cifrado).
-- **No verifica ni contrasta datos por sí misma**: son enlaces hacia terceros; la fiabilidad depende de la fuente externa consultada en cada momento.
-- **El cifrado cubre la exportación, no el `localStorage` en vivo**: mientras trabajas, notas y hallazgos siguen sin cifrar en el navegador; usa la exportación cifrada para archivar o compartir el expediente fuera del equipo, y no compartas el perfil del navegador sin cifrado de disco.
-- **Generación de typosquatting es heurística**: las variantes de dominio son hipótesis de trabajo, no evidencia de registro real.
-- Varias fuentes (Wappalyzer, WhoisXML, Censys Platform, IPcost) no ofrecen *deep-link* público estable, por lo que RASTRO abre la fuente y copia el valor al portapapeles para pegarlo manualmente ("modo asistido").
-
-### Veredicto
-Como herramienta de **primera línea para reconocimiento pasivo y organización de expediente**, RASTRO-WEB cumple muy bien su función: es rápida, no requiere instalación ni backend, y reduce fricción operativa. No sustituye herramientas de correlación avanzada (Maltego, SpiderFoot, i2 Analyst's Notebook) ni el juicio del investigador para verificar y corroborar cada hallazgo con al menos dos fuentes independientes, algo que la propia herramienta recuerda en sus avisos.
+- [Para qué sirve](#para-qué-sirve)
+- [Valor para el investigador de ciberinteligencia](#valor-para-el-investigador-de-ciberinteligencia)
+- [Puesta en marcha](#puesta-en-marcha)
+- [Cómo funciona](#cómo-funciona)
+  - [1. Reconocimiento directo](#1-reconocimiento-directo)
+  - [2. Fuentes externas](#2-fuentes-externas)
+  - [3. Evidencias](#3-evidencias)
+  - [4. Grafo de relaciones](#4-grafo-de-relaciones)
+  - [5. Informe y exportación](#5-informe-y-exportación)
+- [Privacidad y OPSEC](#privacidad-y-opsec)
+- [Limitaciones](#limitaciones)
+- [Detalles técnicos](#detalles-técnicos)
+- [Uso responsable](#uso-responsable)
+- [Licencia y autor](#licencia-y-autor)
 
 ---
 
-## 3. Características principales
+## Para qué sirve
 
-| Módulo | Descripción |
-|---|---|
-| **Detección automática de indicador** | Identifica si el texto introducido es un `DOMAIN`, una `IP` (v4/v6, con clasificación de ámbito: pública, privada, CGNAT, documentación, reservada) o una `URL`, y normaliza el valor. |
-| **Catálogo de fuentes por categoría** | WHOIS/RDAP, DNS, Certificate Transparency, histórico (Wayback), tecnologías, infraestructura/ASN, dominios relacionados, typosquatting, threat intelligence, GitHub, redes sociales, prensa, identidad corporativa (para dominios); identificación, proveedor/VPN/proxy/Tor, RDAP, ASN/BGP, exposición en Internet, reverse DNS, reputación, histórico (para IPs); análisis local, reputación, observación web, histórico, host, parámetros/redirecciones (para URLs). |
-| **Niveles de profundidad** | *Esencial* (4 resultados por bloque), *Ampliado* (9) y *Completo* (todos), para no saturar al investigador en una primera pasada. |
-| **Constructor de dorks** | Genera consultas `site:` / `filetype:` / `inurl:` / exclusión de texto sin modificar el dominio objetivo. |
-| **Captura inteligente → grafo** | Permite pegar resultados de otras herramientas (DNS, WHOIS/RDAP, SecurityTrails, urlscan, Censys, RIPEstat, Whoxy...) y detecta localmente IPs, ASN, correos, URLs y hostnames para incorporarlos como hallazgos. |
-| **Hallazgos y evidencias** | Alta manual de hallazgos con tipo, relación, fuente y estado de evidencia (`MANUAL`, `OBSERVADO`, `HISTÓRICO`, `INFERIDO`). |
-| **Grafo de investigación** | Visualización SVG interactiva (zoom, arrastre, relaciones) entre el indicador raíz y los hallazgos del expediente. |
-| **Cronología del expediente** | Ordena hallazgos según fecha histórica u fecha de incorporación. |
-| **Resumen para el investigador** | Síntesis en lenguaje natural generada localmente (sin IA externa) a partir de los hallazgos y relaciones. |
-| **Exportación de expediente** | Descarga en Markdown, JSON, TXT o **JSON cifrado (`.enc`, AES-GCM 256 + PBKDF2)**. Cada exportación incluye un **hash SHA-256** de integridad. |
-| **Importación de expediente** | Recupera un caso desde un fichero exportado (JSON o `.enc`); detecta el formato automáticamente y pide la contraseña si está cifrado. |
-| **Recordatorio de backup** | Aviso no intrusivo en la barra de estado si pasan más de 15 minutos desde la última exportación con hallazgos pendientes de respaldar. |
-| **Tema claro/oscuro** | Alternable manualmente y con detección de preferencia del sistema; se recuerda entre sesiones. |
-| **Historial y favoritos** | Registro local de indicadores analizados y consultas marcadas como favoritas. |
-| **Pivotes** | A partir de un hallazgo (IP, ASN, correo, NS...) genera nuevas vías de investigación relacionadas. |
+Se introduce un indicador y la herramienta detecta sola de qué tipo es:
+
+| Tipo | Ejemplo | Qué se analiza |
+|---|---|---|
+| Dominio | `ejemplo.com`, `sub.ejemplo.co.uk` | Registro, DNS, subdominios, alojamiento, histórico, dominios similares |
+| IP | `185.199.108.153`, `2001:4860:4860::8888` | Asignación del rango, operador, geolocalización, anonimización, servicios expuestos |
+| URL | `https://sub.ejemplo.com/login?next=…` | Anatomía de la URL sin visitarla, más todo lo anterior sobre su host |
+
+A partir de ahí ofrece cinco áreas de trabajo: **Reconocimiento**, **Fuentes**, **Evidencias**, **Grafo** e **Informe**.
+
+El enfoque es de **reconocimiento pasivo**: la herramienta nunca envía peticiones al objetivo ni escanea puertos. Solo pregunta a servicios públicos de terceros lo que ya saben de él.
 
 ---
 
-## 4. Requisitos
+## Valor para el investigador de ciberinteligencia
 
-- Un **navegador web moderno** (Chrome, Firefox, Edge o Safari actualizados). No requiere instalación, servidor, backend, base de datos ni claves de API.
-- Conexión a Internet **solo** para abrir las fuentes externas que decidas consultar; el análisis local (detección de tipo, parseo de capturas, grafo, resumen) funciona sin conexión.
-- JavaScript habilitado.
+**Reduce el tiempo hasta el primer dato útil.**
+Lo habitual es abrir una decena de webs y copiar el indicador en cada una. Aquí un solo botón lanza las consultas básicas y devuelve una ficha operativa con registrador, fecha de creación, IP actual, operador de red, país, proveedor de DNS y de correo.
+
+**Orienta los requerimientos.**
+El resumen identifica a quién dirigirse para obtener datos de titularidad o de conexión: el registrador y su contacto de abuso, el proveedor de alojamiento, el titular del rango IP. Si el dominio está detrás de una CDN como Cloudflare, lo advierte: la IP visible no es la del servidor real y esa información solo la tiene el proveedor.
+
+**Avisa de lo que cambia la interpretación.**
+Señala los dominios registrados hace menos de 90 días, los suspendidos, las IP que son nodo de salida de Tor, las redes habituales de servicios VPN, la falta de DMARC (dominio suplantable por correo) y los rasgos sospechosos de una URL: credenciales embebidas, punycode, puertos no estándar o redirecciones anidadas en parámetros.
+
+**Conserva la procedencia de cada dato.**
+Cada hallazgo guarda de qué fuente salió, cuándo se incorporó y con qué carácter: observado, histórico, inferido o introducido a mano. Si dos fuentes independientes aportan el mismo dato, pasa a estar corroborado. Esto permite separar en el informe el hecho de la hipótesis.
+
+**Sella las consultas en el tiempo.**
+Cada resultado directo lleva fecha y hora UTC y el nombre del servicio consultado. Los informes exportados incluyen un hash SHA-256 que permite comprobar después que no se han alterado.
+
+**Hace visible la infraestructura.**
+El grafo muestra cómo se encadenan dominio, IP, sistema autónomo, servidores de nombres, correos e identidades. Sirve para detectar infraestructura compartida entre varios indicadores y para explicar el caso a terceros.
+
+**No depende de nadie.**
+No hay cuentas, servidor ni telemetría. El fichero puede llevarse en un pendrive, usarse en un equipo aislado de la red corporativa o auditarse línea a línea antes de emplearlo.
+
+**Mantiene la cautela jurídica.**
+Los textos de la herramienta recuerdan de forma constante que compartir IP, sistema autónomo o servidor de nombres es una pista técnica y no una prueba de titularidad, y que un WHOIS histórico acredita un dato en una fecha, no la situación actual.
 
 ---
 
-## 5. Instalación y puesta en marcha
+## Puesta en marcha
 
-1. Descarga el fichero `index.html` de este repositorio (o clona el repositorio completo).
-2. Ábrelo directamente con doble clic o desde el navegador (`archivo:///ruta/index.html`), o publícalo en cualquier servidor web estático / GitHub Pages si prefieres acceder por URL.
-3. No hay build, dependencias ni instalación de paquetes: es un único fichero autocontenido.
+No requiere instalación.
 
-```bash
-git clone https://github.com/<usuario>/<repositorio>.git
-cd <repositorio>
-# Abre index.html con tu navegador, o sirve la carpeta con cualquier servidor estático:
-python3 -m http.server 8080
-# y visita http://localhost:8080/index.html
+1. Descarga `index_rastro_web.html`.
+2. Ábrelo en un navegador actual (Chrome, Edge, Firefox o Safari).
+3. Escribe un dominio, una IP o una URL y pulsa **Analizar**.
+
+También puede publicarse en GitHub Pages o en cualquier servidor de ficheros estáticos.
+
+**Enlace directo a un indicador.** Añadiendo `#q=` a la dirección se abre ya analizado:
+
+```
+index_rastro_web.html#q=ejemplo.com
 ```
 
----
+**Atajos de teclado**
 
-## 6. Guía de uso paso a paso
-
-### Paso 1 · Introducir el indicador
-En el campo **"Indicador web objetivo"**, introduce un dominio (`example.com`), una IP (`185.199.108.153`) o una URL completa (`https://sub.example.com/ruta?id=123`) y pulsa **▶ Analizar indicador**. RASTRO-WEB detecta automáticamente el tipo y muestra un panel con el análisis estructural local (host, dominio registrable, versión de IP, ámbito de red, señales locales como puerto no estándar, punycode o credenciales embebidas en la URL, etc.).
-
-### Paso 2 · Elegir el nivel de profundidad
-Empieza siempre por **Esencial**. Si necesitas más fuentes por categoría, cambia a **Ampliado** o **Completo** desde el selector de nivel. Esto no vuelve a consultar nada externo: solo cambia cuántos resultados se muestran por bloque.
-
-### Paso 3 · Recorrer las categorías de fuentes
-Cada categoría (WHOIS, DNS, histórico, infraestructura, threat intelligence, redes sociales...) se despliega como un acordeón. Cada entrada indica su modo:
-- **DIRECTA**: abre la consulta ya precargada con el valor del indicador.
-- **ASISTIDA**: abre la fuente externa y copia el valor al portapapeles porque el servicio no admite enlaces directos parametrizados.
-- **BÚSQUEDA**: lanza un dork en el buscador seleccionado (Google, Bing, DuckDuckGo, GitHub...).
-
-Puedes seleccionar varias fuentes con la casilla de cada tarjeta y abrirlas todas a la vez con **"Abrir seleccionadas"**, o filtrar el listado con el buscador de fuentes (ej. escribir `VPN`, `histórico`, `DNS`).
-
-### Paso 4 · Documentar hallazgos
-En la sección **HALLAZGOS**, añade manualmente cada dato relevante que descubras en las fuentes externas (IP, subdominio, correo, ASN, titular, proveedor, etc.), indicando su relación con el indicador, la fuente concreta y el estado de la evidencia (observado, histórico, inferido o manual).
-
-### Paso 5 · Captura inteligente (opcional)
-Si copias resultados en bruto de otra herramienta (registros DNS, salida de RIPEstat, WHOIS, etc.) en el cuadro de **"Captura inteligente"**, RASTRO-WEB detecta localmente IPs, ASN, correos, URLs y hostnames, y puede añadirlos automáticamente al grafo si mantienes activada la opción "AUTO → GRAFO al pegar".
-
-### Paso 6 · Visualizar el grafo de relaciones
-En **GRAFO DE INVESTIGACIÓN** puedes ver el indicador raíz conectado con todos los hallazgos incorporados, crear relaciones adicionales entre nodos, investigar un nodo concreto (abre nuevas fuentes centradas en ese valor) y exportar el grafo como SVG.
-
-### Paso 7 · Generar el resumen y exportar el expediente
-Pulsa **"Actualizar resumen"** para generar una síntesis narrativa local del expediente (titulares, proveedores, señales de privacidad, nameservers históricos, hallazgos relevantes, pendientes según el flujo de trabajo…). Cuando el expediente esté completo, usa **"Exportar informe"** para descargarlo en Markdown, JSON, TXT o **JSON cifrado (`.enc`)**. Todas las exportaciones incluyen un hash SHA-256 de integridad; la opción cifrada pide una contraseña (con confirmación) y usa AES-GCM 256 con derivación PBKDF2 — sin ella no podrás recuperar el fichero, así que guárdala en un gestor de contraseñas.
-
-### Paso 8 · Importar un expediente
-Usa **"Importar expediente"** para recuperar un caso previamente exportado en otro equipo o sesión. Selecciona el fichero `.json` o `.enc`; si está cifrado, la aplicación pedirá la contraseña. Los hallazgos, notas, grafo y favoritos del fichero se cargan y quedan disponibles como si acabaras de analizar ese indicador.
-
-### Paso 9 · Pivotar sobre nuevos hallazgos
-Repite el proceso con cualquier hallazgo relevante (una IP nueva, un correo, un ASN) usando el módulo **"INVESTIGAR HALLAZGO"** para abrir nuevas vías de investigación sin perder el contexto del caso original.
-
-### Paso 10 · Tema claro/oscuro
-El botón **"🌙 Modo oscuro"** (junto a "Exportar informe") alterna la paleta visual manteniendo el mismo estilo y logotipo. Por defecto sigue la preferencia del sistema operativo/navegador la primera vez, y a partir de ahí recuerda tu elección.
+| Tecla | Acción |
+|---|---|
+| `/` | Ir al campo de búsqueda |
+| `Ctrl` + `K` | Filtrar fuentes |
+| `Esc` | Cerrar un panel o salir del grafo a pantalla completa |
 
 ---
 
-## 7. Buenas prácticas operativas
+## Cómo funciona
 
-- **Corrobora siempre con al menos dos fuentes independientes** antes de dar por buena una atribución (proveedor, titular, VPN/proxy, relación de infraestructura). RASTRO-WEB señala esto explícitamente en sus avisos, pero la decisión final es del investigador.
-- **Distingue dato observado de dato histórico**: un WHOIS histórico o un nameserver antiguo no implica titularidad actual.
-- **Exporta el expediente con frecuencia** (Markdown/JSON) para no depender únicamente del `localStorage` del navegador; usa la variante **cifrada (`.enc`)** si el fichero va a salir del equipo (archivo, envío a un compañero, adjunto a un atestado).
-- **Verifica el hash SHA-256** incluido en cada exportación antes de dar por buena la integridad de un expediente recibido de otra persona.
-- **Guarda la contraseña de cifrado en un gestor de contraseñas**: RASTRO-WEB no la almacena ni puede recuperarla; si se pierde, el `.enc` es irrecuperable.
-- **No compartas el navegador/perfil** en el que trabajas con RASTRO-WEB sin cifrado de disco, ya que notas y hallazgos quedan almacenados localmente sin cifrar mientras trabajas (el cifrado se aplica al exportar, no al `localStorage` en vivo).
-- **Respeta la legislación aplicable** a tu investigación y los términos de uso de cada fuente externa que consultes; RASTRO-WEB no autoriza ni legitima el uso de ninguna fuente, solo facilita el acceso a servicios OSINT públicos.
+### 1. Reconocimiento directo
+
+Consultas en vivo a servicios públicos que no piden clave. Se ejecutan una a una o todas con **Ejecutar todo**; nunca se lanzan solas. Los hallazgos de las consultas básicas (DNS, registro, hosting) pueden añadirse automáticamente al expediente; los de las consultas que devuelven listas largas (subdominios, urlscan, dominios similares) se añaden a mano.
+
+**Para un dominio**
+
+| Consulta | Qué devuelve | Servicio |
+|---|---|---|
+| DNS en vivo | Registros A, AAAA, CNAME, NS, MX, TXT, SOA y CAA; SPF y DMARC; proveedor de DNS y de correo | DNS sobre HTTPS de Google, con Cloudflare como respaldo |
+| Registro del dominio | Registrador, fechas de creación y expiración, estado, servidores de nombres, contacto de abuso y registrante si está publicado | RDAP a través de rdap.org |
+| Hosting | Para cada IP (máximo tres): prefijo, sistema autónomo, operador, ubicación aproximada, DNS inverso, puertos abiertos y CVE asociados | RIPEstat, ipwho.is, Shodan InternetDB |
+| Subdominios | Nombres incluidos en certificados TLS emitidos para el dominio | crt.sh |
+| Histórico web | Primera y última captura archivada | Internet Archive |
+| Observaciones | Análisis previos con IP, red, servidor y títulos de página | urlscan.io |
+| Dominios similares | Variantes tipográficas y de extensión que existen en DNS | DNS sobre HTTPS |
+
+**Para una IP**
+
+| Consulta | Qué devuelve | Servicio |
+|---|---|---|
+| Red | Prefijo anunciado, sistema autónomo y operador | RIPEstat |
+| Asignación del rango | Titular del bloque, país y contacto de abuso | RDAP a través de rdap.org |
+| Geolocalización e ISP | País, ciudad aproximada, ISP y organización | ipwho.is |
+| DNS inverso y Tor | Registro PTR y comprobación en la lista de nodos de salida de Tor Project | DNS sobre HTTPS |
+| Puertos y servicios | Puertos, nombres de host, software y CVE ya indexados | Shodan InternetDB |
+
+**Para una URL** se muestra primero su anatomía (protocolo, host, puerto, ruta, parámetros y avisos estructurales), calculada en local y sin visitarla. Después se aplican las consultas de dominio o de IP sobre su host.
+
+Con los resultados se compone una **ficha operativa** y un indicador de **cobertura** que muestra qué fases de la investigación están hechas y cuáles faltan.
+
+Si un servicio no responde o bloquea la petición, la consulta lo indica y ofrece el enlace para abrir esa fuente a mano.
+
+### 2. Fuentes externas
+
+Catálogo de enlaces a herramientas de terceros con el indicador ya cargado, agrupados por fase de investigación.
+
+- **Dominio:** registro y titularidad, DNS actual e histórico, subdominios, infraestructura y tecnología, reputación, histórico web, correos e identidades, contenido indexado, menciones y dominios similares.
+- **IP:** asignación y operador, anonimización (VPN, proxy, Tor), dominios alojados, servicios expuestos, reputación y menciones.
+- **URL:** reputación, observación sin visitar, histórico y menciones, más el catálogo completo de su host.
+
+Cada fuente es de uno de estos tres tipos:
+
+| Tipo | Comportamiento |
+|---|---|
+| Directa | Abre la consulta ya hecha |
+| Asistida | Copia el dato al portapapeles y abre la fuente para pegarlo |
+| Búsqueda | Lanza un dork en un buscador |
+
+Funciones del catálogo:
+
+- Dos niveles de detalle: **Esencial** (las fuentes de primera consulta) y **Completo**.
+- Filtro por texto, selección múltiple para abrir varias a la vez y marcado de favoritas.
+- Las fuentes ya abiertas quedan atenuadas y se registran en el informe con su hora.
+- Constructor de dorks con texto exacto, tipo de fichero, `inurl` y exclusiones.
+
+Entre las fuentes incluidas están ICANN Lookup, Whoxy, SecurityTrails, ViewDNS, crt.sh, urlscan, Shodan, Censys, VirusTotal, AbuseIPDB, Spur, ExoneraTor, BuiltWith, Hunter y Wayback Machine. Para dominios `.es` se añade el registro oficial de Red.es, y entre los dorks hay uno orientado a localizar el aviso legal y la identificación fiscal del responsable del sitio.
+
+### 3. Evidencias
+
+**Hallazgos.** Cada dato del expediente tiene tipo (dominio, IP, subdominio, correo, NS, MX, ASN, URL, empresa, proveedor, titular, etc.), relación con el dato del que depende, fuentes y estado:
+
+| Estado | Significado |
+|---|---|
+| `OBSERVADO` | Obtenido de una fuente en el momento de la consulta |
+| `HISTORICO` | Dato de una fecha pasada, por ejemplo un WHOIS archivado |
+| `INFERIDO` | Deducción del investigador o hipótesis técnica |
+| `MANUAL` | Introducido a mano sin fuente declarada |
+| `CORROBORADO` | Aportado por dos o más fuentes distintas |
+
+Los hallazgos se pueden marcar como relevantes para que encabecen el informe.
+
+**Captura inteligente.** Se pega el texto copiado de cualquier fuente y la herramienta extrae en local las direcciones IP, sistemas autónomos, correos, URL, subdominios, registros DNS y datos de titularidad de un WHOIS. Se elige la fuente, el carácter del dato y, si procede, su fecha histórica.
+
+**Pivotes.** Al pulsar cualquier hallazgo se abre un panel con las vías de investigación para ese tipo de dato: búsqueda inversa de WHOIS por correo o por nombre, dominios que comparten servidor de nombres o de correo, otros hosts del mismo sistema autónomo, registros mercantiles. Si el dato es un dominio, una IP o una URL, puede abrirse como nuevo objetivo con su propio expediente.
+
+**Libreta y cronología.** Notas libres por expediente y una línea temporal que ordena los hallazgos por la fecha del dato o, si no la tiene, por la de incorporación.
+
+### 4. Grafo de relaciones
+
+Representación del expediente con el objetivo como nodo raíz.
+
+- Los hallazgos se enlazan con el dato del que proceden: dominio → IP → sistema autónomo.
+- Se pueden añadir relaciones manuales entre dos nodos cualesquiera y cambiar el tipo de relación.
+- Admite arrastrar nodos, desplazar, hacer zoom y verlo a pantalla completa.
+- La disposición es automática hasta que se mueve un nodo a mano; desde entonces se respetan las posiciones.
+- Exporta a SVG.
+
+### 5. Informe y exportación
+
+El **resumen** se redacta en local a partir de los hallazgos y de las consultas directas. Recoge los datos de registro e infraestructura, las alertas, las identidades documentadas, los posibles destinatarios de requerimiento, los hallazgos relevantes, los corroborados y las fases pendientes.
+
+Formatos de exportación:
+
+| Formato | Contenido |
+|---|---|
+| Markdown / texto | Informe completo: resumen, notas, consultas directas con sello horario, hallazgos, relaciones y fuentes consultadas |
+| JSON | Expediente completo, reimportable en otro equipo |
+| `.enc` | El mismo JSON cifrado con contraseña |
+
+Todas las exportaciones incorporan un hash SHA-256 de integridad. La copia cifrada usa AES-256-GCM con clave derivada por PBKDF2 (SHA-256, 150 000 iteraciones); sin la contraseña no es recuperable.
 
 ---
 
-## 8. Privacidad y arquitectura técnica
+## Privacidad y OPSEC
 
-- **100% cliente**: no existe backend ni servidor propio. Todo el procesamiento (detección de tipo, parseo de capturas, construcción del grafo, generación del resumen, cifrado/descifrado) ocurre en el navegador mediante la **Web Crypto API** nativa.
-- **Sin telemetría ni llamadas externas automáticas**: el indicador solo sale del dispositivo cuando el investigador decide abrir manualmente una fuente externa.
-- **Persistencia en `localStorage`**: historial, favoritos, notas, hallazgos y posiciones del grafo se guardan localmente por expediente, sin sincronización en la nube.
-- **Cifrado de exportación**: AES-GCM de 256 bits con clave derivada por PBKDF2 (150.000 iteraciones) a partir de la contraseña introducida; el fichero `.enc` incluye la sal y el vector de inicialización, ambos necesarios (junto con la contraseña) para descifrar.
-- **Integridad**: cada exportación incorpora un hash SHA-256 del contenido, calculado localmente, para poder verificar que el expediente no se ha alterado tras generarse.
-- **Sin claves de API ni credenciales**: todas las fuentes se consultan como lo haría cualquier usuario desde su navegador; no hay scraping automatizado ni bypass de CORS.
+**Qué se queda en el equipo.** Notas, hallazgos, historial, favoritos, posiciones del grafo y resultados de las consultas se guardan en el `localStorage` del navegador. No hay servidor propio, cuentas ni telemetría.
 
-> ⚠️ La Web Crypto API (`crypto.subtle`) requiere un **contexto seguro** (HTTPS, `localhost` o, según el navegador, `file://`). Si el botón de exportación/importación cifrada indica que el cifrado no está disponible, sirve la aplicación por HTTP local (ver sección 5) en lugar de abrir el HTML directamente con doble clic.
+**Qué sale del equipo.** El indicador solo se transmite en dos casos, ambos por acción del usuario:
 
----
+1. Al ejecutar una consulta directa.
+2. Al abrir una fuente externa.
 
-## 9. Limitaciones conocidas
+Las consultas directas contactan con estos servicios:
 
-- No realiza resolución DNS, escaneo de puertos ni ninguna consulta activa contra el objetivo.
-- No verifica la disponibilidad ni vigencia de los enlaces a terceros; algunos servicios pueden cambiar su interfaz o requerir cuenta/API key propia del investigador.
-- La generación de variantes de typosquatting es heurística local y no comprueba si esos dominios existen realmente.
-- El resumen narrativo es una plantilla basada en reglas, no un modelo de lenguaje: no interpreta matices ni realiza inferencias más allá de lo programado.
-- El cifrado protege los ficheros **exportados**, no los datos mientras se trabaja en `localStorage`; una migración a un almacenamiento cifrado en vivo (o a IndexedDB) queda pendiente como mejora futura, ya que exigiría un refactor mayor del motor de guardado.
-- No incluye manifiesto PWA ni funcionamiento instalable/offline explícito, para mantener el proyecto como un único fichero HTML autocontenido y fácil de distribuir.
+| Servicio | Uso |
+|---|---|
+| `dns.google`, `cloudflare-dns.com` | Resolución DNS |
+| `rdap.org` y el servidor RDAP del registro o RIR correspondiente | Datos de registro |
+| `stat.ripe.net` | Prefijo y sistema autónomo |
+| `ipwho.is` | Geolocalización e ISP |
+| `internetdb.shodan.io` | Puertos y servicios indexados |
+| `crt.sh` | Certificados |
+| `archive.org`, `web.archive.org` | Histórico web |
+| `urlscan.io` | Análisis previos |
 
----
+> **Importante:** esas peticiones salen con la dirección IP del investigador. Los terceros consultados pueden registrar qué indicador se ha preguntado y desde dónde. Si el caso lo requiere, utiliza una salida de red dedicada a la investigación.
 
-## 10. Aviso legal
-
-Herramienta de uso interno autorizado para investigación de ciberinteligencia y cibercrimen. El usuario es responsable del uso que haga de las fuentes externas enlazadas y del cumplimiento de la legislación aplicable a su investigación (protección de datos, autorización judicial cuando proceda, términos de servicio de terceros, etc.). RASTRO-WEB no almacena ni transmite datos a ningún servidor de terceros por sí misma.
+La página se sirve con política `no-referrer`, de modo que las fuentes externas no reciben la dirección desde la que se abrieron.
 
 ---
 
-## 11. Contribuir
+## Limitaciones
 
-Al tratarse de un fichero HTML autocontenido, cualquier contribución (nuevas fuentes OSINT, corrección de enlaces caducados, mejoras de UI) puede proponerse mediante *pull request* directamente sobre `index.html`. Se recomienda documentar en la descripción del PR qué categoría o fuente se añade/modifica y por qué.
+- **Depende de terceros.** Las consultas directas funcionan mientras esos servicios permitan peticiones desde el navegador (CORS) y mantengan su acceso gratuito. Cualquiera puede cambiar sus condiciones, limitar el número de peticiones o dejar de responder. Las redes corporativas y los bloqueadores de contenido también pueden impedirlas.
+- **Los datos pueden estar desactualizados.** Lo indexado por Shodan, urlscan o Wayback refleja el momento en que ellos lo observaron.
+- **No todos los dominios tienen RDAP.** Algunas extensiones nacionales no lo ofrecen; en ese caso hay que usar las fuentes WHOIS del catálogo.
+- **La geolocalización IP es aproximada** y sitúa al proveedor, no al usuario.
+- **Las etiquetas de VPN o proxy son valoraciones de terceros** y cambian con el tiempo.
+- **El dominio registrable se calcula con una lista reducida** de sufijos de varios niveles (`co.uk`, `com.es`, `com.mx`…), no con la Public Suffix List completa. En extensiones poco comunes puede identificar mal el dominio base.
+- **Los enlaces del catálogo pueden quedar obsoletos** cuando las webs de destino cambian su estructura.
+- **Los datos viven solo en el navegador.** Borrar los datos de navegación elimina los expedientes. Conviene exportar con regularidad; la herramienta lo recuerda.
+- **Abrir varias fuentes a la vez** puede requerir permitir ventanas emergentes.
 
-## 12. Licencia
+---
 
-Este proyecto se distribuye bajo licencia **MIT** — ver el fichero [`LICENSE`](./LICENSE). En resumen: puedes usar, copiar, modificar, fusionar, publicar y distribuir el software libremente, incluso con fines comerciales, siempre que conserves el aviso de copyright y la licencia. Se entrega **"tal cual"**, sin garantía de ningún tipo; el aviso legal de la sección 10 sobre el uso responsable de las fuentes OSINT enlazadas sigue aplicando independientemente de la licencia de software.
+## Detalles técnicos
+
+- Un único fichero HTML con CSS y JavaScript integrados, sin dependencias ni librerías externas.
+- El logotipo va embebido; no se carga ningún recurso remoto al abrir la página.
+- Todo el contenido recibido de terceros se inserta como texto, nunca como HTML.
+- Tema oscuro y claro. Diseño adaptable a móvil y tableta.
+
+El código está organizado en doce secciones comentadas:
+
+```
+1  Utilidades                 7  Captura inteligente
+2  Estado                     8  Pivotes
+3  Indicador (detección)      9  Grafo
+4  Catálogo de fuentes       10  Informe y exportación
+5  Reconocimiento directo    11  Interfaz
+6  Hallazgos                 12  Arranque
+```
+
+**Añadir una fuente al catálogo.** En la sección 4 cada fuente es una línea con uno de estos constructores:
+
+```js
+L('Nombre', `https://servicio.tld/buscar/${e(b)}`, 'nota', true)   // directa
+A('Nombre', 'https://servicio.tld/', b, 'nota')                    // asistida: copia el dato
+S('Nombre', `site:${b} "texto"`, 'nota')                           // búsqueda (dork)
+```
+
+El último parámetro (`true`) hace que la fuente aparezca en el nivel Esencial.
+
+**Añadir una consulta directa.** En la sección 5, cada módulo de `MODULES` declara cuándo se aplica, a qué servicio llama y una función `run` que devuelve los pares clave-valor, los hallazgos, los avisos y los datos para la ficha operativa.
+
+**Almacenamiento.** Los datos se guardan bajo claves con prefijo `rd_` (`rd_findings`, `rd_notes`, `rd_recon`, `rd_history`, etc.), indexados por indicador.
+
+---
+
+## Uso responsable
+
+RASTRO WEB está pensada para investigación autorizada de cibercrimen, ciberinteligencia y análisis de amenazas.
+
+- Trabaja solo con fuentes abiertas y no realiza acciones intrusivas, pero quien la usa es responsable de cumplir la normativa aplicable y las condiciones de uso de cada servicio consultado.
+- Los resultados son indicios técnicos. No acreditan por sí solos la identidad ni la responsabilidad de una persona y deben contrastarse antes de sustentar cualquier conclusión.
+- Algunas fuentes externas del catálogo sí realizan acciones activas desde sus servidores, como un escaneo nuevo en urlscan. Están señaladas en la propia herramienta.
+
+---
+
+## Licencia y autor
+
+Publicado bajo licencia **MIT**. Consulta el fichero [LICENSE](LICENSE).
+
+Creado por **S3GAD3**.
